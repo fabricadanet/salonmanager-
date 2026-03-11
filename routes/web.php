@@ -41,6 +41,14 @@ $router->get('/admin/finance/categories', 'FinanceController@categories');
 $router->post('/admin/finance/categories/store', 'FinanceController@storeCategory');
 $router->post('/admin/finance/categories/delete', 'FinanceController@deleteCategory');
 
+// Administrativo - Usuários (Acessos)
+$router->get('/admin/users', 'UserController@index');
+$router->get('/admin/users/create', 'UserController@create');
+$router->post('/admin/users/store', 'UserController@store');
+$router->get('/admin/users/edit', 'UserController@edit');
+$router->post('/admin/users/update', 'UserController@update');
+$router->post('/admin/users/delete', 'UserController@delete');
+
 // Services CRUD
 $router->get('/admin/services', 'ServiceController@index');
 $router->get('/admin/services/create', 'ServiceController@create');
