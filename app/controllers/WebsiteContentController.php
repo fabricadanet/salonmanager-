@@ -25,34 +25,112 @@ class WebsiteContentController extends Controller {
 
     public function update() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            require_once __DIR__ . '/../../core/ImageHandler.php';
             $data = Validator::sanitize($_POST);
             $model = new WebsiteContent();
             
             // Loop through posted sections
-            foreach ($data as $section => $fields) {
+            foreach ($_POST as $section => $fields) {
                 if (is_array($fields)) {
-                    // find id of section
                     $existing = $model->where('section', $section)[0] ?? null;
+                    
+                    // Handle image upload/URL
+                    $fileInput = null;
+                    if (isset($_FILES[$section]['name']['image']) && !empty($_FILES[$section]['name']['image'])) {
+                        $fileInput = [
+                            'name' => $_FILES[$section]['name']['image'],
+                            'type' => $_FILES[$section]['type']['image'],
+                            'tmp_name' => $_FILES[$section]['tmp_name']['image'],
+                            'error' => $_FILES[$section]['error']['image'],
+                            'size' => $_FILES[$section]['size']['image']
+                        ];
+                    }
+
+                    $imagePath = ImageHandler::handle(
+                        $fileInput, 
+                        $fields['image_url'] ?? null, 
+                        $existing['image'] ?? ''
+                    );
+
+                    // Map fields based on what's available in the $fields array
+                    // This prevents clearing existing fields that are not present in this specific section's form
+                    $updateData = [
+                        'image' => $imagePath,
+                        'section' => $section
+                    ];
+
+                    // Title mapping
+                    if (isset($fields['title'])) {
+                        $updateData['title'] = Validator::sanitize($fields['title']);
+                    } elseif ($existing) {
+                        $updateData['title'] = $existing['title'];
+                    }
+
+                    // Subtitle mapping
+                    if (isset($fields['subtitle'])) {
+                        $updateData['subtitle'] = Validator::sanitize($fields['subtitle']);
+                    } elseif ($existing) {
+                        $updateData['subtitle'] = $existing['subtitle'];
+                    }
+
+                    // Content field mapping
+                    if (isset($fields['content'])) {
+                        $updateData['content'] = Validator::sanitize($fields['content']);
+                    } elseif (isset($fields['footer_text'])) {
+                        $updateData['content'] = Validator::sanitize($fields['footer_text']);
+                    } elseif ($existing) {
+                        $updateData['content'] = $existing['content'];
+                    }
+
                     if ($existing) {
-                        $model->update($existing['id'], [
-                            'title' => $fields['title'] ?? '',
-                            'subtitle' => $fields['subtitle'] ?? '',
-                            'content' => $fields['content'] ?? '',
-                            'image' => $fields['image'] ?? ''
-                        ]);
+                        $model->update($existing['id'], $updateData);
                     } else {
-                        // create
-                        $model->create([
-                            'section' => $section,
-                            'title' => $fields['title'] ?? '',
-                            'subtitle' => $fields['subtitle'] ?? '',
-                            'content' => $fields['content'] ?? '',
-                            'image' => $fields['image'] ?? ''
-                        ]);
+                        $updateData['section'] = $section;
+                        $model->create($updateData);
                     }
                 }
             }
             $this->redirect('/admin/content');
+        }
+    }
+    
+    public function seo() {
+        $model = new WebsiteContent();
+        $seo = $model->where('section', 'seo')[0] ?? [];
+        
+        // Decode fields if stored in 'content' as JSON or handled separately
+        // For simplicity, we'll store specific scripts in title/subtitle/content fields
+        // title -> Google Tag
+        // content -> Other Header Scripts
+        
+        $this->view('layouts/admin', [
+            'title' => 'SEO & Rastreamento | SalonManager',
+            'showSidebar' => true,
+            'seo' => $seo,
+            'content' => $this->renderPartial('admin/seo/index', compact('seo'))
+        ]);
+    }
+
+    public function updateSeo() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $data = $_POST; // Don't use Validator::sanitize for scripts as it might strip tags
+            $model = new WebsiteContent();
+            
+            $existing = $model->where('section', 'seo')[0] ?? null;
+            
+            $updateData = [
+                'title' => $data['google_tag'] ?? '',
+                'content' => $data['header_scripts'] ?? '',
+                'section' => 'seo'
+            ];
+
+            if ($existing) {
+                $model->update($existing['id'], $updateData);
+            } else {
+                $model->create($updateData);
+            }
+            
+            $this->redirect('/admin/seo?success=1');
         }
     }
     

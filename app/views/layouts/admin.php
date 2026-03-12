@@ -3,7 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $title ?? 'SalonManager' ?></title>
+    <?php 
+    require_once __DIR__ . '/../../models/WebsiteContent.php';
+    $contentModel = new WebsiteContent();
+    $globalConfig = $contentModel->where('section', 'global')[0] ?? [];
+    $sysName = !empty($globalConfig['title']) ? $globalConfig['title'] : 'SalonManager';
+    ?>
+    <title><?= $title ?? $sysName ?></title>
+    <?php if(!empty($globalConfig['image'])): ?>
+    <link rel="icon" type="image/x-icon" href="<?= $globalConfig['image'] ?>">
+    <?php endif; ?>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Alpine JS -->
@@ -18,7 +27,7 @@
     <?php if (isset($showSidebar) && $showSidebar): ?>
         <aside :class="sidebarOpen ? 'w-64' : 'w-20'" class="bg-gray-900 text-white flex-shrink-0 hidden md:flex flex-col transition-all duration-300 ease-in-out">
             <div class="h-16 flex items-center justify-between px-4 border-b border-gray-800">
-                <h1 x-show="sidebarOpen" class="text-xl font-bold truncate">SalonManager</h1>
+                <h1 x-show="sidebarOpen" class="text-xl font-bold truncate"><?= $sysName ?></h1>
                 
                 <!-- Toggle Button -->
                 <button @click="sidebarOpen = !sidebarOpen" class="text-gray-400 hover:text-white focus:outline-none" :class="!sidebarOpen && 'w-full flex justify-center'">
@@ -101,6 +110,11 @@
                     <svg class="h-5 w-5 flex-shrink-0 <?= strpos($_SERVER['REQUEST_URI'], '/admin/content') === 0 ? 'text-white' : 'text-teal-300' ?>" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
                     <span x-show="sidebarOpen" class="ml-3 whitespace-nowrap">Site Público</span>
                 </a>
+
+                <a href="/admin/seo" class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium <?= strpos($_SERVER['REQUEST_URI'], '/admin/seo') === 0 ? 'bg-indigo-600 text-white pointer-events-none' : 'text-indigo-100 hover:bg-indigo-800 hover:text-white' ?> transition-colors" :title="!sidebarOpen ? 'SEO & Rastreamento' : ''">
+                    <svg class="h-5 w-5 flex-shrink-0 <?= strpos($_SERVER['REQUEST_URI'], '/admin/seo') === 0 ? 'text-white' : 'text-indigo-300' ?>" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                    <span x-show="sidebarOpen" class="ml-3 whitespace-nowrap">SEO & Rastreamento</span>
+                </a>
             </nav>
             <div class="p-4 border-t border-gray-800 text-center">
                 <a href="/logout" class="block w-full text-center px-2 py-2 bg-red-600 rounded text-white hover:bg-red-700 transition" title="Sair do Sistema">
@@ -121,7 +135,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
             </button>
-            <h1 class="ml-4 text-xl font-semibold">SalonManager</h1>
+            <h1 class="ml-4 text-xl font-semibold"><?= $sysName ?></h1>
         </header>
         <?php endif; ?>
         

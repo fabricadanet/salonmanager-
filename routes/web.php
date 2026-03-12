@@ -95,4 +95,8 @@ $router->post('/admin/appointments/delete', 'AppointmentController@delete');
 $router->get('/admin/content', 'WebsiteContentController@index');
 $router->post('/admin/content/update', 'WebsiteContentController@update');
 
+// SEO & Tracking
+$router->get('/admin/seo', 'WebsiteContentController@seo');
+$router->post('/admin/seo/update', 'WebsiteContentController@updateSeo');
+
 return $router;

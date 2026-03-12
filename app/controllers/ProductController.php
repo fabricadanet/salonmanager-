@@ -28,13 +28,20 @@ class ProductController extends Controller {
 
     public function store() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            require_once __DIR__ . '/../../core/ImageHandler.php';
             $data = Validator::sanitize($_POST);
+            
+            $imagePath = ImageHandler::handle(
+                $_FILES['image'] ?? null,
+                $data['image_url'] ?? null
+            );
+
             $model = new Product();
             $model->create([
                 'name' => $data['name'] ?? '',
                 'description' => $data['description'] ?? '',
                 'price' => floatval($data['price'] ?? 0),
-                'image' => $data['image'] ?? '',
+                'image' => $imagePath,
                 'min_stock_level' => (int)($data['min_stock_level'] ?? 5),
                 'commission_percentage' => floatval($data['commission_percentage'] ?? 0.0)
             ]);
@@ -60,13 +67,22 @@ class ProductController extends Controller {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = $_POST['id'] ?? null;
             if ($id) {
+                require_once __DIR__ . '/../../core/ImageHandler.php';
                 $data = Validator::sanitize($_POST);
                 $model = new Product();
+                $existing = $model->find($id);
+
+                $imagePath = ImageHandler::handle(
+                    $_FILES['image'] ?? null,
+                    $data['image_url'] ?? null,
+                    $existing['image'] ?? ''
+                );
+
                 $model->update($id, [
                     'name' => $data['name'] ?? '',
                     'description' => $data['description'] ?? '',
                     'price' => floatval($data['price'] ?? 0),
-                    'image' => $data['image'] ?? '',
+                    'image' => $imagePath,
                     'min_stock_level' => (int)($data['min_stock_level'] ?? 5),
                     'commission_percentage' => floatval($data['commission_percentage'] ?? 0.0)
                 ]);

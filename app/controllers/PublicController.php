@@ -16,19 +16,33 @@ class PublicController extends Controller {
         return $content;
     }
 
-    public function index() {
+    private $template;
+
+    public function __construct() {
         $data = $this->getWebsiteData();
-        $whatsapp = $data['whatsapp']['content'] ?? '';
+        $this->template = $data['config']['content'] ?? 'noir';
+    }
+
+    public function index() {
+        $website = $this->getWebsiteData(); // Renamed $data to $website for clarity and consistency with the edit
+        $whatsapp = $website['whatsapp']['content'] ?? '';
         
+        // New Dynamic Sections for index
+        $website['services_h'] = $website['services_header'] ?? [];
+        $website['products_h'] = $website['products_header'] ?? [];
+        // cta, global, social are now handled in getWebsiteData()
+
         $serviceModel = new Service();
         $services = array_slice($serviceModel->where('is_active', 1), 0, 3); // top 3
 
         $productModel = new Product();
         $products = array_slice($productModel->where('is_active', 1), 0, 3); // top 3
 
-        $this->view('layouts/public', [
+        $this->templateView('home', [
             'title' => 'Home | SalonManager',
-            'content' => $this->renderPartial('public/home', compact('data', 'services', 'products', 'whatsapp')),
+            'data' => $website,
+            'services' => $services,
+            'products' => $products,
             'whatsapp' => $whatsapp
         ]);
     }
@@ -39,9 +53,9 @@ class PublicController extends Controller {
         $serviceModel = new Service();
         $services = $serviceModel->where('is_active', 1);
 
-        $this->view('layouts/public', [
+        $this->templateView('services', [
             'title' => 'Serviços | SalonManager',
-            'content' => $this->renderPartial('public/services', compact('services', 'whatsapp')),
+            'services' => $services,
             'whatsapp' => $whatsapp
         ]);
     }
@@ -52,9 +66,9 @@ class PublicController extends Controller {
         $productModel = new Product();
         $products = $productModel->where('is_active', 1);
 
-        $this->view('layouts/public', [
+        $this->templateView('products', [
             'title' => 'Produtos | SalonManager',
-            'content' => $this->renderPartial('public/products', compact('products', 'whatsapp')),
+            'products' => $products,
             'whatsapp' => $whatsapp
         ]);
     }
@@ -68,9 +82,10 @@ class PublicController extends Controller {
         $profModel = new Professional();
         $professionals = $profModel->all();
 
-        $this->view('layouts/public', [
+        $this->templateView('book', [
             'title' => 'Agendar Horário | SalonManager',
-            'content' => $this->renderPartial('public/book', compact('services', 'professionals', 'whatsapp')),
+            'services' => $services,
+            'professionals' => $professionals,
             'whatsapp' => $whatsapp
         ]);
     }
@@ -124,17 +139,50 @@ class PublicController extends Controller {
     public function contact() {
         $data = $this->getWebsiteData();
         $whatsapp = $data['whatsapp']['content'] ?? '';
-        $this->view('layouts/public', [
+        $this->templateView('contact', [
             'title' => 'Contato | SalonManager',
-            'content' => $this->renderPartial('public/contact', compact('data', 'whatsapp')),
-            'whatsapp' => $whatsapp
+            'data' => $data,
+            'whatsapp' => $whatsapp,
+            'logo' => $data['logo']['image'] ?? null
         ]);
     }
-    
-    private function renderPartial($view, $data = []) {
+
+    public function privacy() {
+        $website = $this->getWebsiteData();
+        $this->templateView('privacy', [
+            'title' => 'Política de Privacidade | ' . ($website['global']['subtitle'] ?? 'SalonManager'),
+            'data' => $website,
+            'content' => $website['privacy']['content'] ?? '<p>Política de privacidade em breve.</p>'
+        ]);
+    }
+
+    public function terms() {
+        $website = $this->getWebsiteData();
+        $this->templateView('terms', [
+            'title' => 'Termos de Uso | ' . ($website['global']['subtitle'] ?? 'SalonManager'),
+            'data' => $website,
+            'content' => $website['terms']['content'] ?? '<p>Termos de uso em breve.</p>'
+        ]);
+    }
+
+    private function templateView($view, $data = []) {
+        $data['website_data'] = $this->getWebsiteData();
+        $data['logo'] = $data['website_data']['logo']['image'] ?? null;
+        $data['social'] = $data['website_data']['social'] ?? [];
+        $data['global'] = $data['website_data']['global'] ?? [];
+        
+        $templatePath = "templates/{$this->template}/";
+        $layoutFile = __DIR__ . "/../views/{$templatePath}layout.php";
+        
         extract($data);
+        
+        // Render content
         ob_start();
-        require __DIR__ . "/../views/{$view}.php";
-        return ob_get_clean();
+        require __DIR__ . "/../views/{$templatePath}{$view}.php";
+        $content = ob_get_clean();
+ 
+        // Render layout
+        require $layoutFile;
     }
 }
+

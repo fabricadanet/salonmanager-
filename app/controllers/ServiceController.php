@@ -28,13 +28,21 @@ class ServiceController extends Controller {
 
     public function store() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            require_once __DIR__ . '/../../core/ImageHandler.php';
             $data = Validator::sanitize($_POST);
+
+            $imagePath = ImageHandler::handle(
+                $_FILES['image'] ?? null,
+                $data['image_url'] ?? null
+            );
+
             $model = new Service();
             $model->create([
                 'name' => $data['name'] ?? '',
                 'description' => $data['description'] ?? '',
                 'price' => floatval($data['price'] ?? 0),
-                'duration' => intval($data['duration'] ?? 0)
+                'duration' => intval($data['duration'] ?? 0),
+                'image' => $imagePath
             ]);
             $this->redirect('/admin/services');
         }
@@ -58,13 +66,23 @@ class ServiceController extends Controller {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = $_POST['id'] ?? null;
             if ($id) {
+                require_once __DIR__ . '/../../core/ImageHandler.php';
                 $data = Validator::sanitize($_POST);
                 $model = new Service();
+                $existing = $model->find($id);
+
+                $imagePath = ImageHandler::handle(
+                    $_FILES['image'] ?? null,
+                    $data['image_url'] ?? null,
+                    $existing['image'] ?? ''
+                );
+
                 $model->update($id, [
                     'name' => $data['name'] ?? '',
                     'description' => $data['description'] ?? '',
                     'price' => floatval($data['price'] ?? 0),
-                    'duration' => intval($data['duration'] ?? 0)
+                    'duration' => intval($data['duration'] ?? 0),
+                    'image' => $imagePath
                 ]);
             }
             $this->redirect('/admin/services');
