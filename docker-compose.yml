@@ -1,0 +1,69 @@
+version: "3.8"
+
+services:
+  salonmanager:
+    # ⚠️ Substitua SEU_USUARIO pelo seu usuário do Docker Hub
+    image: SEU_USUARIO/salonmanager:latest
+    # build: .  ← use apenas para build local
+    volumes:
+      # Persistência do banco de dados SQLite
+      - salonmanager_db:/var/www/html/database
+      # Persistência das imagens enviadas via upload
+      - salonmanager_uploads:/var/www/html/public/uploads
+    environment:
+      # Ambiente de execução
+      - APP_ENV=production
+      # Defina uma chave secreta para segurança de sessões
+      - APP_SECRET=troque_por_uma_chave_aleatoria_segura_aqui
+    networks:
+      - traefik_public
+      - app_network
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          cpus: "1"
+          memory: 512M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      labels:
+        - traefik.enable=true
+
+        # ─── HTTPS ──────────────────────────────────────────────────
+        # ⚠️ Substitua seudominio.com.br pelo domínio real
+        - traefik.http.routers.salonmanager.rule=Host(`seudominio.com.br`)
+        - traefik.http.routers.salonmanager.entrypoints=websecure
+        - traefik.http.routers.salonmanager.tls=true
+        - traefik.http.routers.salonmanager.tls.certresolver=le
+        - traefik.http.routers.salonmanager.service=salonmanager
+
+        # ─── HTTP → HTTPS Redirect ──────────────────────────────────
+        - traefik.http.routers.salonmanager-http.rule=Host(`seudominio.com.br`)
+        - traefik.http.routers.salonmanager-http.entrypoints=web
+        - traefik.http.routers.salonmanager-http.middlewares=redirect-to-https
+
+        # ─── Middleware de redirect ─────────────────────────────────
+        - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+        - traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true
+
+        # ─── Serviço interno ────────────────────────────────────────
+        - traefik.http.services.salonmanager.loadbalancer.server.port=80
+
+volumes:
+  salonmanager_db:
+    external: true
+  salonmanager_uploads:
+    external: true
+
+networks:
+  traefik_public:
+    external: true
+  app_network:
+    external: true

@@ -1,0 +1,35 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Agent and AI files
+.agent/
+.gemini/
+
+# Documentation
+README.md
+DEPLOY.md
+PRD.md
+
+# Debug files
+public/debug_upload.php
+public/debug_upload.txt
+
+# Local dev files
+*.log
+*.cache
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# SQLite database (gerado pelo migrate.php no primeiro start)
+database/database.sqlite
+
+# Uploads (volume externo no Swarm)
+public/uploads/*
+!public/uploads/.gitkeep
+
+# Node (caso seja adicionado futuramente)
+node_modules/
