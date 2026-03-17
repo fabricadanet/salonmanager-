@@ -10,6 +10,8 @@ $router->get('/produtos', 'PublicController@products');
 $router->get('/agendar', 'PublicController@book');
 $router->post('/agendar', 'PublicController@processBooking');
 $router->get('/contato', 'PublicController@contact');
+$router->get('/privacidade', 'PublicController@privacy');
+$router->get('/termos', 'PublicController@terms');
 
 // Auth Routes
 $router->get('/login', 'AuthController@index');
@@ -69,12 +71,14 @@ $router->post('/admin/products/delete', 'ProductController@delete');
 $router->get('/admin/sales', 'SaleController@index');
 $router->get('/admin/sales/create', 'SaleController@create');
 $router->post('/admin/sales/store', 'SaleController@store');
+$router->get('/admin/sales/receipt', 'SaleController@receipt');
+$router->get('/admin/sales/details', 'SaleController@details');
 
 // Stock Management
 $router->get('/admin/stock', 'StockController@index');
 $router->get('/admin/stock/movement', 'StockController@movementForm');
 $router->get('/admin/stock/history', 'StockController@history');
-$router->post('/admin/stock/store', 'StockController@storeMovement');
+$router->post('/admin/stock/store_movement', 'StockController@storeMovement');
 
 // Professionals CRUD
 $router->get('/admin/professionals', 'ProfessionalController@index');

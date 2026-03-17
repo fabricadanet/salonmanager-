@@ -26,7 +26,6 @@ class WebsiteContentController extends Controller {
     public function update() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             require_once __DIR__ . '/../../core/ImageHandler.php';
-            $data = Validator::sanitize($_POST);
             $model = new WebsiteContent();
             
             // Loop through posted sections
@@ -53,31 +52,33 @@ class WebsiteContentController extends Controller {
                     );
 
                     // Map fields based on what's available in the $fields array
-                    // This prevents clearing existing fields that are not present in this specific section's form
                     $updateData = [
                         'image' => $imagePath,
                         'section' => $section
                     ];
 
-                    // Title mapping
+                    // Title mapping - Sanitize as plain text
                     if (isset($fields['title'])) {
                         $updateData['title'] = Validator::sanitize($fields['title']);
                     } elseif ($existing) {
                         $updateData['title'] = $existing['title'];
                     }
 
-                    // Subtitle mapping
+                    // Subtitle mapping - Sanitize as plain text
                     if (isset($fields['subtitle'])) {
                         $updateData['subtitle'] = Validator::sanitize($fields['subtitle']);
                     } elseif ($existing) {
                         $updateData['subtitle'] = $existing['subtitle'];
                     }
 
-                    // Content field mapping
+                    // Content field mapping - DO NOT sanitize rich text HTML content 
+                    // Validator::sanitize uses htmlspecialchars which doubles-escapes tags from Quill.js
                     if (isset($fields['content'])) {
-                        $updateData['content'] = Validator::sanitize($fields['content']);
+                        // Allow HTML but keep raw for Database
+                        $updateData['content'] = $fields['content']; 
                     } elseif (isset($fields['footer_text'])) {
-                        $updateData['content'] = Validator::sanitize($fields['footer_text']);
+                        // Footer text is also often HTML / rich
+                        $updateData['content'] = $fields['footer_text'];
                     } elseif ($existing) {
                         $updateData['content'] = $existing['content'];
                     }

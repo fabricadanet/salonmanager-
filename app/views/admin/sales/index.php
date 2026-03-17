@@ -1,41 +1,73 @@
-<div class="flex justify-between items-center mb-6 border-b border-gray-200 pb-4">
-    <h2 class="text-2xl font-bold text-gray-800">Histórico de Vendas (PDV)</h2>
-    <a href="/admin/sales/create" class="bg-gray-900 text-white px-4 py-2 hover:bg-gray-800 rounded shadow font-medium transition">Novo Pedido (PDV)</a>
-</div>
+<div x-data="{ 
+    dateFrom: '<?= $dateFrom ?? '' ?>',
+    dateTo: '<?= $dateTo ?? '' ?>',
+    loading: false,
+    updateTable(page = 1) {
+        this.loading = true;
+        const params = new URLSearchParams({
+            page: page,
+            date_from: this.dateFrom,
+            date_to: this.dateTo
+        });
+        
+        const newUrl = `${window.location.pathname}?${params.toString()}`;
+        window.history.pushState({}, '', newUrl);
 
-<div class="bg-white shadow rounded-lg overflow-hidden">
-    <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-            <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Método Pgto.</th>
-                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-            </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-            <?php foreach ($sales as $sale): ?>
-            <tr>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">#<?= str_pad($sale['id'], 5, '0', STR_PAD_LEFT) ?></td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?= date('d/m/Y H:i', strtotime($sale['created_at'])) ?></td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    <?= htmlspecialchars($sale['customer_name'] ?? 'Cliente Avulso') ?>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">
-                    <?= htmlspecialchars($sale['payment_method']) ?>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-900">
-                    R$ <?= number_format($sale['total_amount'], 2, ',', '.') ?>
-                </td>
-            </tr>
-            <?php endforeach; ?>
-            
-            <?php if (empty($sales)): ?>
-            <tr>
-                <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">Nenhuma venda registrada ainda.</td>
-            </tr>
-            <?php endif; ?>
-        </tbody>
-    </table>
+        fetch(newUrl, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(res => res.text())
+        .then(html => {
+            document.getElementById('table-container').innerHTML = html;
+            this.loading = false;
+        })
+        .catch(err => {
+            console.error(err);
+            this.loading = false;
+        });
+    }
+}">
+    
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 space-y-4 md:space-y-0">
+        <div>
+            <h2 class="text-3xl font-bold text-slate-900 tracking-tighter uppercase">Vendas</h2>
+            <p class="text-xs text-gray-400 uppercase tracking-[0.3em] font-bold mt-1">Histórico de Transações</p>
+        </div>
+        <a href="/admin/sales/create" class="bg-slate-900 hover:bg-slate-800 text-white px-10 py-3 rounded-none shadow-sm text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:scale-[1.02] active:scale-[0.98]">
+            Nova Venda (PDV)
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white p-6 mb-6 shadow-sm border border-gray-100">
+        <div class="flex flex-col md:flex-row items-end gap-6">
+            <div class="flex-1 space-y-2">
+                <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">De:</label>
+                <input type="date" x-model="dateFrom" @change="updateTable(1)"
+                       class="w-full bg-gray-50 border-none px-4 py-3 text-sm focus:ring-2 focus:ring-slate-900 transition-all rounded-none">
+            </div>
+            <div class="flex-1 space-y-2">
+                <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Até:</label>
+                <input type="date" x-model="dateTo" @change="updateTable(1)"
+                       class="w-full bg-gray-50 border-none px-4 py-3 text-sm focus:ring-2 focus:ring-slate-900 transition-all rounded-none">
+            </div>
+            <button @click="dateFrom = ''; dateTo = ''; updateTable(1)" 
+                    class="bg-gray-100 hover:bg-gray-200 text-gray-600 px-6 py-3 text-[10px] font-black uppercase tracking-[0.2em] transition-all rounded-none">
+                Limpar
+            </button>
+            <div x-show="loading" class="flex items-center pb-3">
+                <svg class="animate-spin h-5 w-5 text-slate-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table Container -->
+    <div id="table-container" class="bg-white shadow-sm border border-gray-100 overflow-hidden">
+        <?php require __DIR__ . '/index_table.php'; ?>
+    </div>
 </div>

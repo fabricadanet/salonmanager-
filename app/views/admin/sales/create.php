@@ -191,9 +191,48 @@
                     </span>
                 </button>
                 
-                <div x-show="errorMsg" x-transition class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center">
-                    <svg class="h-5 w-5 text-red-500 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    <p x-text="errorMsg" class="text-red-700 text-sm font-medium"></p>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div x-show="showSuccessModal" 
+     class="fixed inset-0 z-[100] overflow-y-auto" 
+     style="display: none;" 
+     x-transition:enter="transition ease-out duration-300"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     x-transition:leave="transition ease-in duration-200"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 transition-opacity bg-gray-900/60 backdrop-blur-sm" @click="resetPOS()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full border border-gray-100">
+            <div class="bg-white px-8 pt-8 pb-6 text-center">
+                <div class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-emerald-100 mb-6">
+                    <svg class="h-10 w-10 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-black text-gray-900 tracking-tight mb-2">Venda Realizada!</h3>
+                <p class="text-gray-500 text-sm font-medium mb-8 uppercase tracking-widest">Cupom gerado com sucesso.</p>
+                
+                <div class="grid grid-cols-1 gap-4">
+                    <!-- Imprimir -->
+                    <button @click="printReceipt()" class="flex items-center justify-center space-x-3 px-6 py-4 bg-gray-900 text-white rounded-2xl font-bold hover:bg-gray-800 transition-all shadow-lg hover:shadow-gray-200 group">
+                        <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                        <span>Imprimir Cupom</span>
+                    </button>
+                    
+                    <!-- WhatsApp -->
+                    <button @click="shareWhatsApp()" class="flex items-center justify-center space-x-3 px-6 py-4 bg-emerald-500 text-white rounded-2xl font-bold hover:bg-emerald-600 transition-all shadow-lg hover:shadow-emerald-200 group">
+                        <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.246 2.248 3.484 5.232 3.484 8.412-.003 6.557-5.338 11.892-11.893 11.892-1.997-.001-3.951-.5-5.688-1.448l-6.309 1.656zm6.29-4.143c1.589.943 3.163 1.417 4.881 1.418h.003c5.422 0 9.835-4.412 9.838-9.835.002-2.628-1.023-5.1-2.885-6.963-1.862-1.864-4.335-2.889-6.966-2.89-5.424 0-9.835 4.411-9.838 9.836-.001 1.774.475 3.513 1.378 5.03l-.15.423-1.023 3.73 3.822-1.001-.424.152zM16.686 13.593l-.75-.375c-.219-.109-.594-.281-.844-.406-.219-.109-.343-.172-.469-.313-.125-.141-.219-.343-.406-.688l-.594-1.125c-.094-.188-.188-.343-.406-.438-.188-.062-.375-.031-.531.062-.156.094-.313.25-.406.406l-.313.438c-.094.156-.219.469-.406.469-.094 0-.313-.125-.469-.219-.156-.094-.375-.25-.469-.343-.188-.188-.343-.469-.406-.688-.062-.219-.031-.406.031-.563.062-.156.125-.313.219-.469l.344-.5c.094-.125.125-.25.125-.375 0-.125-.031-.25-.094-.375-.062-.219-.281-.625-.375-.813-.156-.375-.313-.688-.469-.875-.156-.188-.344-.313-.531-.313s-.344.062-.5.188c-.156.125-.313.313-.375.5-.094.219-.125.438-.125.656 0 .438.126.969.344 1.469.25.5.563 1.031.938 1.469l.063.063c.625.75 1.531 1.563 2.5 2.188.969.625 1.938.938 2.844 1.125.469.094.906.094 1.281.031.375-.063.719-.219.969-.469.25-.25.438-.5.531-.75.094-.25.125-.531.125-.813 0-.156-.031-.313-.094-.469z" /></svg>
+                        <span>Enviar via WhatsApp</span>
+                    </button>
+                    
+                    <button @click="resetPOS()" class="text-sm font-bold text-gray-400 uppercase tracking-widest hover:text-gray-900 transition-colors mt-4 py-2">
+                        Nova Venda
+                    </button>
                 </div>
             </div>
         </div>
@@ -225,6 +264,9 @@
             cart: [],
             isProcessing: false,
             errorMsg: '',
+            
+            showSuccessModal: false,
+            lastSaleId: null,
 
             updateNewItemPrice() {
                 this.newItemPrice = 0;
@@ -309,15 +351,47 @@
                     let result = await response.json();
                     
                     if (result.success) {
-                        window.location.href = result.redirect;
+                        this.lastSaleId = result.sale_id;
+                        this.showSuccessModal = true;
+                        this.isProcessing = false;
                     } else {
-                        this.errorMsg = result.message || 'Erro do servidor ao processar venda: ' + escapeHtml(result.message);
+                        this.errorMsg = result.message || 'Erro do servidor';
                         this.isProcessing = false;
                     }
                 } catch (e) {
-                    this.errorMsg = 'Erro de rede. Verifique o terminal PHP.';
+                    this.errorMsg = 'Erro de rede. Verifique a conexão.';
                     this.isProcessing = false;
                 }
+            },
+
+            printReceipt() {
+                if (!this.lastSaleId) return;
+                const url = `/admin/sales/receipt?id=${this.lastSaleId}&print=1`;
+                window.open(url, '_blank', 'width=400,height=600');
+            },
+
+            shareWhatsApp() {
+                if (!this.lastSaleId) return;
+                
+                let text = `Olá! Segue o detalhamento da sua compra nº ${this.lastSaleId}:\n\n`;
+                this.cart.forEach(item => {
+                    text += `${item.quantity}x ${item.name} - R$ ${item.subtotal.toFixed(2)}\n`;
+                });
+                text += `\nTotal: R$ ${this.cartTotal.toFixed(2)}\n`;
+                text += `Pagamento: ${this.paymentMethod.toUpperCase()}\n\n`;
+                text += `Agradecemos a preferência!`;
+                
+                const encodedText = encodeURIComponent(text);
+                window.open(`https://api.whatsapp.com/send?text=${encodedText}`, '_blank');
+            },
+
+            resetPOS() {
+                this.cart = [];
+                this.customerId = '';
+                this.paymentMethod = 'dinheiro';
+                this.showSuccessModal = false;
+                this.lastSaleId = null;
+                this.errorMsg = '';
             }
         }));
     });

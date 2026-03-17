@@ -9,15 +9,29 @@ class UserController extends Controller {
     }
 
     public function index() {
-        $userModel = new User();
+        $page = (int) ($_GET['page'] ?? 1);
+        $limit = 10;
+        $search = $_GET['search'] ?? null;
         
-        // Puxar todos os usuários listados (com proteção visual ou sem senha, embora o Auth já bloqueie quem não for admin)
-        $users = $userModel->all();
+        $filters = [];
+        if ($search) {
+            $filters['name'] = "%{$search}%";
+        }
+        
+        $userModel = new User();
+        $users = $userModel->paginate($page, $limit, $filters);
+        $total = $userModel->count($filters);
+        $totalPages = ceil($total / $limit);
+
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+            echo $this->renderPartial('admin/users/index_table', compact('users', 'page', 'totalPages', 'total'));
+            exit;
+        }
 
         $this->view('layouts/admin', [
             'title' => 'Gestão de Acessos | SalonManager',
             'showSidebar' => true,
-            'content' => $this->renderPartial('admin/users/index', compact('users'))
+            'content' => $this->renderPartial('admin/users/index', compact('users', 'page', 'totalPages', 'total', 'search'))
         ]);
     }
 

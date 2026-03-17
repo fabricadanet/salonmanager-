@@ -9,13 +9,29 @@ class StockController extends Controller {
     }
 
     public function index() {
+        $page = (int) ($_GET['page'] ?? 1);
+        $limit = 10;
+        $search = $_GET['search'] ?? null;
+        
+        $filters = [];
+        if ($search) {
+            $filters['name'] = "%{$search}%";
+        }
+        
         $productModel = new Product();
-        $products = $productModel->all();
+        $products = $productModel->paginate($page, $limit, $filters);
+        $total = $productModel->count($filters);
+        $totalPages = ceil($total / $limit);
+
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+            echo $this->renderPartial('admin/stock/index_table', compact('products', 'page', 'totalPages', 'total'));
+            exit;
+        }
 
         $this->view('layouts/admin', [
             'title' => 'Controle de Estoque | SalonManager',
             'showSidebar' => true,
-            'content' => $this->renderPartial('admin/stock/index', compact('products'))
+            'content' => $this->renderPartial('admin/stock/index', compact('products', 'page', 'totalPages', 'total', 'search'))
         ]);
     }
 
@@ -102,19 +118,38 @@ class StockController extends Controller {
             return;
         }
 
+        $page = (int) ($_GET['page'] ?? 1);
+        $limit = 10;
+        $offset = ($page - 1) * $limit;
+
         $productModel = new Product();
         $product = $productModel->find($id);
 
-        ob_start();
         $db = Database::getConnection();
-        $stmt = $db->prepare("SELECT * FROM stock_movements WHERE product_id = ? ORDER BY created_at DESC");
-        $stmt->execute([$id]);
+        
+        // Count total for pagination
+        $stmtCount = $db->prepare("SELECT COUNT(*) FROM stock_movements WHERE product_id = ?");
+        $stmtCount->execute([$id]);
+        $total = $stmtCount->fetchColumn();
+        $totalPages = ceil($total / $limit);
+
+        // Get movements
+        $stmt = $db->prepare("SELECT * FROM stock_movements WHERE product_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?");
+        $stmt->bindValue(1, $id, PDO::PARAM_INT);
+        $stmt->bindValue(2, $limit, PDO::PARAM_INT);
+        $stmt->bindValue(3, $offset, PDO::PARAM_INT);
+        $stmt->execute();
         $movements = $stmt->fetchAll();
+
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+            echo $this->renderPartial('admin/stock/history_table', compact('product', 'movements', 'page', 'totalPages', 'total'));
+            exit;
+        }
 
         $this->view('layouts/admin', [
             'title' => 'Histórico de Estoque | SalonManager',
             'showSidebar' => true,
-            'content' => $this->renderPartial('admin/stock/history', compact('product', 'movements'))
+            'content' => $this->renderPartial('admin/stock/history', compact('product', 'movements', 'page', 'totalPages', 'total'))
         ]);
     }
     

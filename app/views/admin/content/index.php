@@ -168,6 +168,44 @@
                         </div>
                     </div>
                 </label>
+                <!-- Beauty -->
+                <label class="relative cursor-pointer group">
+    <input type="radio" name="config[content]" value="beauty" class="peer sr-only" <?= ($content['config']['content'] ?? '') === 'beauty' ? 'checked' : '' ?>>
+
+    <div class="p-4 bg-white/5 border-2 border-indigo-800/30 rounded-2xl 
+        peer-checked:border-indigo-500 
+        peer-checked:bg-indigo-500/10 
+        hover:bg-white/5 
+        transition-all duration-300
+        peer-checked:[&_.check-icon]:opacity-100 
+        peer-checked:[&_.check-circle]:bg-indigo-500 
+        peer-checked:[&_.check-circle]:border-indigo-500">
+
+        <!-- Preview -->
+        <div class="aspect-[16/10] bg-pink-50 rounded-xl mb-4 overflow-hidden border border-white/5 shadow-2xl">
+            <img src="/assets/img/previews/beauty.png" class="w-full h-full object-cover">
+        </div>
+
+        <!-- Info -->
+        <div class="flex items-center justify-between">
+            <div>
+                <span class="block text-sm font-black text-indigo-100 uppercase tracking-widest">
+                    Beauty Flow
+                </span>
+                <span class="block text-[10px] text-indigo-300/40 uppercase mt-1">
+                    Elegância Moderna & Conversão
+                </span>
+            </div>
+
+            <!-- Check -->
+            <div class="check-circle w-6 h-6 rounded-full border-2 border-indigo-800 flex items-center justify-center transition-all">
+                <svg class="check-icon w-3 h-3 text-white opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+</label>
             </div>
         </div>
     </div>
@@ -302,7 +340,7 @@
             <div class="space-y-4">
                 <label class="block text-[10px] font-black uppercase tracking-widest text-purple-600">Política de Privacidade</label>
                 <div class="bg-gray-50 rounded-xl overflow-hidden border border-gray-200">
-                    <div id="privacy-editor" style="height: 300px;"><?= $content['privacy']['content'] ?? '' ?></div>
+                    <div id="privacy-editor" style="height: 300px;"><?= htmlspecialchars_decode($content['privacy']['content'] ?? '') ?></div>
                     <input type="hidden" name="privacy[content]" id="privacy-input">
                 </div>
             </div>
@@ -311,7 +349,7 @@
             <div class="space-y-4 pt-6 border-t border-gray-100">
                 <label class="block text-[10px] font-black uppercase tracking-widest text-purple-600">Termos de Uso</label>
                 <div class="bg-gray-50 rounded-xl overflow-hidden border border-gray-200">
-                    <div id="terms-editor" style="height: 300px;"><?= $content['terms']['content'] ?? '' ?></div>
+                    <div id="terms-editor" style="height: 300px;"><?= htmlspecialchars_decode($content['terms']['content'] ?? '') ?></div>
                     <input type="hidden" name="terms[content]" id="terms-input">
                 </div>
             </div>

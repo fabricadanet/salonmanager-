@@ -31,7 +31,7 @@
         </div>
 
         <div class="glass rounded-[2.5rem] p-10 shadow-2xl">
-            <h2 class="text-2xl font-black text-slate-900 mb-8 tracking-tight">Bem-vindo.</h2>
+            <h2 class="text-2xl font-black text-slate-900 mb-8 tracking-tight">Bem-vindo(a).</h2>
 
             <?php if (isset($error)): ?>
                 <div class="bg-red-500/10 border border-red-500/20 text-red-600 p-4 rounded-2xl mb-6 text-sm font-bold flex items-center">

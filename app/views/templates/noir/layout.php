@@ -105,15 +105,15 @@
     
     <!-- Navbar -->
     <header 
-        x-data="{ scrolled: false }" 
+        x-data="{ scrolled: false, mobileMenuOpen: false }" 
         @scroll.window="scrolled = (window.pageYOffset > 20)"
         class="fixed top-0 w-full z-50 transition-all duration-300 border-b border-white/5"
-        :class="scrolled ? 'bg-noir/90 backdrop-blur-md py-3' : 'bg-transparent py-5'"
+        :class="scrolled || mobileMenuOpen ? 'bg-noir/95 backdrop-blur-md py-3' : 'bg-transparent py-5'"
     >
         <div class="max-w-7xl mx-auto px-6 lg:px-12 flex justify-between items-center">
             <a href="/" class="group flex items-center space-x-2">
                 <?php if(!empty($logo)): ?>
-                    <img src="<?= $logo ?>" alt="SalonManager" class="h-10 w-auto group-hover:scale-105 transition-transform">
+                    <img src="<?= (string)$logo ?>" alt="SalonManager" class="h-10 w-auto group-hover:scale-105 transition-transform">
                 <?php else: ?>
                     <span class="text-2xl font-bold tracking-widest font-serif text-white group-hover:text-gold transition-colors italic"><?= mb_substr($global['subtitle'] ?? 'S.M', 0, 3) ?></span>
                     <span class="text-xs tracking-[0.3em] uppercase opacity-50 font-light group-hover:opacity-100 transition-opacity"><?= $global['subtitle'] ?? 'SalonManager' ?></span>
@@ -127,10 +127,50 @@
                 <a href="/contato" class="text-sm uppercase tracking-widest hover:text-gold transition-colors font-light">Contato</a>
             </nav>
             
-            <a href="/agendar" class="group relative px-6 py-3 overflow-hidden border border-gold/30">
-                <div class="absolute inset-0 w-0 bg-gold transition-all duration-[400ms] ease-out group-hover:w-full"></div>
-                <span class="relative text-xs uppercase tracking-[0.2em] font-medium text-gold group-hover:text-noir transition-colors">Agendar</span>
-            </a>
+            <div class="flex items-center space-x-6">
+                <a href="/agendar" class="hidden md:block group relative px-6 py-3 overflow-hidden border border-gold/30">
+                    <div class="absolute inset-0 w-0 bg-gold transition-all duration-[400ms] ease-out group-hover:w-full"></div>
+                    <span class="relative text-xs uppercase tracking-[0.2em] font-medium text-gold group-hover:text-noir transition-colors">Agendar</span>
+                </a>
+
+                <!-- Hamburger Button -->
+                <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden text-white hover:text-gold transition-colors focus:outline-none">
+                    <svg x-show="!mobileMenuOpen" class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.75 9h16.5m-16.5 6.75h16.5"/></svg>
+                    <svg x-show="mobileMenuOpen" x-cloak class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Overlay -->
+        <div x-show="mobileMenuOpen" 
+             x-cloak
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 -translate-y-4"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 translate-y-0"
+             x-transition:leave-end="opacity-0 -translate-y-4"
+             class="md:hidden bg-noir-light border-b border-white/10 absolute top-full left-0 w-full p-8 shadow-2xl overflow-y-auto max-h-[calc(100vh-80px)]"
+        >
+            <nav class="flex flex-col space-y-6">
+                <a href="/" class="text-lg uppercase tracking-[0.3em] font-light hover:text-gold transition-colors border-b border-white/5 pb-4">Início</a>
+                <a href="/servicos" class="text-lg uppercase tracking-[0.3em] font-light hover:text-gold transition-colors border-b border-white/5 pb-4">Serviços</a>
+                <a href="/produtos" class="text-lg uppercase tracking-[0.3em] font-light hover:text-gold transition-colors border-b border-white/5 pb-4">Produtos</a>
+                <a href="/contato" class="text-lg uppercase tracking-[0.3em] font-light hover:text-gold transition-colors border-b border-white/5 pb-4">Contato</a>
+                <a href="/agendar" class="mt-4 block text-center py-4 border border-gold text-gold uppercase tracking-[0.2em] text-xs font-bold hover:bg-gold hover:text-noir transition-all">
+                    Agendar Horário
+                </a>
+            </nav>
+            
+            <?php if (!empty($social)): ?>
+            <div class="flex space-x-6 mt-12 pt-8 border-t border-white/5">
+                <?php if(!empty($social['instagram'])): ?>
+                    <a href="<?= $social['instagram'] ?>" target="_blank" class="text-gray-500 hover:text-gold transition-colors">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.332 3.608 1.308.975.975 1.245 2.242 1.308 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.062 1.366-.332 2.633-1.308 3.608-.975.975-2.242 1.245-3.608 1.308-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.332-3.608-1.308-.975-.975-1.245-2.242-1.308-3.608-.062-1.366-.332-2.633-1.308-3.608C2.175 15.584 2.163 15.204 2.163 12s.012-3.584.07-4.85c.062-1.366.332-2.633 1.308-3.608.975-.975 2.242-1.245 3.608-1.308 1.266-.058 1.646-.07 4.85-.07M12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                    </a>
+                <?php endif; ?>
+            </div>
+            <?php endif; ?>
         </div>
     </header>
 

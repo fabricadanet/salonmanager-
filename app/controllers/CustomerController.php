@@ -9,13 +9,30 @@ class CustomerController extends Controller {
     }
 
     public function index() {
-        $customerModel = new Customer();
-        $customers = $customerModel->all();
+        $page = (int) ($_GET['page'] ?? 1);
+        $limit = 10;
+        $search = $_GET['search'] ?? null;
         
+        $filters = [];
+        if ($search) {
+            $filters['name'] = "%{$search}%";
+        }
+        
+        $customerModel = new Customer();
+        $customers = $customerModel->paginate($page, $limit, $filters);
+        $total = $customerModel->count($filters);
+        $totalPages = ceil($total / $limit);
+        
+        // If AJAX request, return only the table partial
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+            echo $this->renderPartial('admin/customers/index_table', compact('customers', 'page', 'totalPages', 'total'));
+            exit;
+        }
+
         $this->view('layouts/admin', [
             'title' => 'Clientes | SalonManager',
             'showSidebar' => true,
-            'content' => $this->renderPartial('admin/customers/index', compact('customers'))
+            'content' => $this->renderPartial('admin/customers/index', compact('customers', 'page', 'totalPages', 'total', 'search'))
         ]);
     }
 

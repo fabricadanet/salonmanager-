@@ -16,20 +16,30 @@ class SaleController extends Controller {
     }
 
     public function index() {
-        $db = Database::getConnection();
-        // Get sales with customer name
-        $stmt = $db->query("
-            SELECT s.*, c.name as customer_name 
-            FROM sales s 
-            LEFT JOIN customers c ON s.customer_id = c.id 
-            ORDER BY s.created_at DESC
-        ");
-        $sales = $stmt->fetchAll();
+        $page = (int) ($_GET['page'] ?? 1);
+        $limit = 10;
+        $dateFrom = $_GET['date_from'] ?? null;
+        $dateTo = $_GET['date_to'] ?? null;
+        
+        $filters = [
+            'date_from' => $dateFrom,
+            'date_to' => $dateTo
+        ];
+        
+        $saleModel = new Sale();
+        $sales = $saleModel->paginateWithCustomer($page, $limit, $filters);
+        $total = $saleModel->countWithFilters($filters);
+        $totalPages = ceil($total / $limit);
+
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+            echo $this->renderPartial('admin/sales/index_table', compact('sales', 'page', 'totalPages', 'total'));
+            exit;
+        }
 
         $this->view('layouts/admin', [
             'title' => 'Vendas & PDV | SalonManager',
             'showSidebar' => true,
-            'content' => $this->renderPartial('admin/sales/index', compact('sales'))
+            'content' => $this->renderPartial('admin/sales/index', compact('sales', 'page', 'totalPages', 'total', 'dateFrom', 'dateTo'))
         ]);
     }
 
@@ -220,13 +230,76 @@ class SaleController extends Controller {
                 ]);
 
                 $db->commit();
-                $this->json(['success' => true, 'redirect' => '/admin/sales']);
+                $this->json(['success' => true, 'sale_id' => $saleId, 'redirect' => '/admin/sales']);
                 
             } catch (Exception $e) {
                 $db->rollBack();
                 $this->json(['success' => false, 'message' => $e->getMessage()]);
             }
         }
+    }
+
+    public function receipt() {
+        $id = $_GET['id'] ?? null;
+        if (!$id) {
+            $this->redirect('/admin/sales');
+            return;
+        }
+
+        $saleModel = new Sale();
+        $sale = $saleModel->find($id);
+        
+        if (!$sale) {
+            die("Venda não encontrada.");
+        }
+
+        // Get Customer
+        $customerModel = new Customer();
+        $customer = $sale['customer_id'] ? $customerModel->find($sale['customer_id']) : null;
+        $sale['customer_name'] = $customer ? $customer['name'] : 'Consumidor Final';
+        $sale['customer_phone'] = $customer ? $customer['phone'] : '';
+
+        // Get Items
+        $saleItemModel = new SaleItem();
+        $items = $saleItemModel->getBySaleId($id);
+
+        // Load Global info for Salon Name
+        require_once __DIR__ . '/../models/WebsiteContent.php';
+        $contentModel = new WebsiteContent();
+        $global = $contentModel->where('section', 'general')[0] ?? [];
+
+        require __DIR__ . "/../views/admin/sales/receipt.php";
+    }
+
+    public function details() {
+        $id = $_GET['id'] ?? null;
+        if (!$id) {
+            $this->redirect('/admin/sales');
+            return;
+        }
+
+        $saleModel = new Sale();
+        $sale = $saleModel->find($id);
+        
+        if (!$sale) {
+            $this->redirect('/admin/sales');
+            return;
+        }
+
+        // Get Customer Name
+        $customerModel = new Customer();
+        $customer = $sale['customer_id'] ? $customerModel->find($sale['customer_id']) : null;
+        $sale['customer_name'] = $customer ? $customer['name'] : 'Consumidor Final';
+
+        // Get Items
+        $saleItemModel = new SaleItem();
+        $items = $saleItemModel->getBySaleId($id);
+
+        $this->view('layouts/admin', [
+            'title' => 'Detalhes da Venda #' . $id . ' | SalonManager',
+            'showSidebar' => true,
+            'content' => $this->renderPartial('admin/sales/show', compact('sale', 'items'))
+        ]);
     }
 
     private function renderPartial($view, $data = []) {

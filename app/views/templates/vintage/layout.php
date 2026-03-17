@@ -39,25 +39,58 @@
 </head>
 <body class="text-amber-950/80">
     <?= $seoConfig['title'] ?? '' ?> <!-- google_tag -->
-    <header x-data="{ scrolled: false }" @scroll.window="scrolled = (window.pageYOffset > 50)"
+    <header x-data="{ scrolled: false, mobileMenuOpen: false }" @scroll.window="scrolled = (window.pageYOffset > 50)"
             class="fixed top-0 w-full z-50 transition-all duration-500"
-            :class="scrolled ? 'bg-[#fcfaf7]/90 backdrop-blur-md border-b border-amber-200/50 py-4' : 'bg-transparent py-10'">
+            :class="scrolled || mobileMenuOpen ? 'bg-[#fcfaf7]/95 backdrop-blur-md border-b border-amber-200/50 py-4' : 'bg-transparent py-10'">
         <div class="max-w-6xl mx-auto px-6 flex justify-between items-center">
             <a href="/" class="group flex flex-col items-center">
                 <?php if(!empty($logo)): ?>
-                    <img src="<?= $logo ?>" alt="SalonManager" class="h-12 w-auto mb-1 group-hover:scale-105 transition-transform">
+                    <img src="<?= (string)$logo ?>" alt="SalonManager" class="h-12 w-auto mb-1 group-hover:scale-105 transition-transform">
                 <?php else: ?>
                     <span class="text-3xl font-serif font-bold italic tracking-wider text-amber-900 leading-none"><?= $global['subtitle'] ?? 'SalonManager' ?></span>
                     <span class="text-[8px] uppercase tracking-[0.6em] text-amber-700/60 mt-1 font-bold">Est. 2024</span>
                 <?php endif; ?>
             </a>
+
+            <!-- Desktop Nav -->
             <nav class="hidden md:flex space-x-10 text-[10px] uppercase tracking-[0.3em] font-semibold text-amber-900/70">
                 <a href="/" class="hover:text-amber-600 transition-colors">Início</a>
                 <a href="/servicos" class="hover:text-amber-600 transition-colors">Serviços</a>
                 <a href="/produtos" class="hover:text-amber-600 transition-colors">Boutique</a>
                 <a href="/contato" class="hover:text-amber-600 transition-colors">Contato</a>
             </nav>
-            <a href="/agendar" class="vintage-border px-8 py-3 text-[10px] uppercase tracking-[0.3em] font-bold text-amber-900 hover:bg-amber-900 hover:text-white transition-all">Agendar</a>
+
+            <div class="flex items-center space-x-6">
+                <a href="/agendar" class="hidden md:block vintage-border px-8 py-3 text-[10px] uppercase tracking-[0.3em] font-bold text-amber-900 hover:bg-amber-900 hover:text-white transition-all">Agendar</a>
+                
+                <!-- Hamburger Button -->
+                <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden text-amber-900 focus:outline-none">
+                    <svg x-show="!mobileMenuOpen" class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M4 8h16M4 16h16"/></svg>
+                    <svg x-show="mobileMenuOpen" x-cloak class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div x-show="mobileMenuOpen" 
+             x-cloak
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 scale-95"
+             x-transition:enter-end="opacity-100 scale-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 scale-100"
+             x-transition:leave-end="opacity-0 scale-95"
+             class="md:hidden bg-[#fcfaf7] border-b border-amber-200/50 absolute top-full left-0 w-full p-10 shadow-xl"
+        >
+            <nav class="flex flex-col space-y-8 text-center italic font-serif text-xl text-amber-900">
+                <a href="/" class="hover:text-amber-600 transition-colors border-b border-amber-900/5 pb-4">Início</a>
+                <a href="/servicos" class="hover:text-amber-600 transition-colors border-b border-amber-900/5 pb-4">Serviços</a>
+                <a href="/produtos" class="hover:text-amber-600 transition-colors border-b border-amber-900/5 pb-4">Boutique</a>
+                <a href="/contato" class="hover:text-amber-600 transition-colors border-b border-amber-900/5 pb-4">Contato</a>
+                <a href="/agendar" class="mt-4 vintage-border px-8 py-4 text-xs uppercase tracking-[0.3em] font-bold text-amber-900 hover:bg-amber-900 hover:text-white transition-all">
+                    Agendar Horário
+                </a>
+            </nav>
         </div>
     </header>
 

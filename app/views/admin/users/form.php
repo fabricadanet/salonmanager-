@@ -1,65 +1,50 @@
-<?php
-$isEdit = isset($user);
-$action = $isEdit ? '/admin/users/update' : '/admin/users/store';
-$title = $isEdit ? 'Editar Usuário' : 'Novo Usuário';
-?>
-
-<div class="mb-6 border-b border-gray-200 pb-4 flex justify-between items-center">
-    <h2 class="text-2xl font-bold text-gray-800"><?= $title ?></h2>
-    <a href="/admin/users" class="text-sm font-medium text-gray-600 hover:text-gray-900">
-        &larr; Voltar
-    </a>
+<div class="mb-8 flex justify-between items-end border-b border-gray-100 pb-6">
+    <div>
+        <h2 class="text-3xl font-bold text-slate-900 tracking-tighter uppercase"><?= isset($user) ? 'Editar Acesso' : 'Novo Acesso' ?></h2>
+        <p class="text-xs text-gray-400 uppercase tracking-[0.3em] font-bold mt-1">Configuração de Permissões</p>
+    </div>
+    <a href="/admin/users" class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 hover:text-slate-900 transition-colors">&larr; Voltar para a lista</a>
 </div>
 
-<div class="bg-white shadow rounded-lg max-w-2xl border border-gray-100 overflow-hidden">
-    <form action="<?= $action ?>" method="POST" class="p-6 space-y-6">
-        <?php if($isEdit): ?>
+<div class="bg-white shadow-sm border border-gray-100 p-8 max-w-4xl">
+    <form action="<?= isset($user) ? '/admin/users/update' : '/admin/users/store' ?>" method="POST" class="space-y-8">
+        <?php if (isset($user)): ?>
             <input type="hidden" name="id" value="<?= $user['id'] ?>">
         <?php endif; ?>
 
-        <div>
-            <label class="block text-sm font-bold text-gray-700 mb-1">Nome Completo</label>
-            <input type="text" name="name" required value="<?= $isEdit ? htmlspecialchars($user['name']) : '' ?>" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Primeiro e Sobrenome">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="space-y-2">
+                <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Nome Completo *</label>
+                <input type="text" name="name" required value="<?= htmlspecialchars($user['name'] ?? '') ?>" 
+                       placeholder="Ex: Administrador Principal"
+                       class="w-full bg-gray-50 border-none px-4 py-3 text-sm focus:ring-2 focus:ring-slate-900 transition-all rounded-none font-bold">
+            </div>
+
+            <div class="space-y-2">
+                <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">E-mail de Acesso *</label>
+                <input type="email" name="email" required value="<?= htmlspecialchars($user['email'] ?? '') ?>" 
+                       placeholder="admin@salao.com"
+                       class="w-full bg-gray-50 border-none px-4 py-3 text-sm focus:ring-2 focus:ring-slate-900 transition-all rounded-none">
+            </div>
+
+            <div class="space-y-2">
+                <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Senha <?= isset($user) ? '(deixe vazio para manter)' : '*' ?></label>
+                <input type="password" name="password" <?= isset($user) ? '' : 'required' ?> 
+                       class="w-full bg-gray-50 border-none px-4 py-3 text-sm focus:ring-2 focus:ring-slate-900 transition-all rounded-none">
+            </div>
+
+            <div class="space-y-2">
+                <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Nível de Acesso *</label>
+                <select name="role" required class="w-full bg-gray-50 border-none px-4 py-3 text-sm focus:ring-2 focus:ring-slate-900 transition-all rounded-none appearance-none">
+                    <option value="admin" <?= (isset($user) && $user['role'] === 'admin') ? 'selected' : '' ?>>Administrador</option>
+                    <option value="professional" <?= (isset($user) && $user['role'] === 'professional') ? 'selected' : '' ?>>Profissional</option>
+                </select>
+            </div>
         </div>
 
-        <div>
-            <label class="block text-sm font-bold text-gray-700 mb-1">E-mail (Login de Acesso)</label>
-            <input type="email" name="email" required value="<?= $isEdit ? htmlspecialchars($user['email']) : '' ?>" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="seu-email@exemplo.com">
-        </div>
-
-        <div>
-            <label class="block text-sm font-bold text-gray-700 mb-1">
-                <?= $isEdit ? 'Nova Senha (Deixe me branco para NÃO alterar)' : 'Senha de Acesso' ?>
-            </label>
-            <input type="password" name="password" <?= $isEdit ? '' : 'required' ?> minlength="6" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-        </div>
-
-        <div>
-            <label class="block text-sm font-bold text-gray-700 mb-1">Tipo de Permissão</label>
-            <select name="role" required class="w-full border border-gray-300 rounded-lg px-4 py-3 bg-gray-50 focus:bg-white transition-colors cursor-pointer">
-                <?php
-                $currentRole = $isEdit ? $user['role'] : '';
-                ?>
-                <option value="reception" <?= $currentRole == 'reception' ? 'selected' : '' ?>>
-                    👤 Recepção (Pode ver Agenda, Clientes e PDV/Vendas)
-                </option>
-                <option value="professional" <?= $currentRole == 'professional' ? 'selected' : '' ?>>
-                    ✂️ Profissional (Pode ver apenas a própria Agenda)
-                </option>
-                <option value="admin" <?= $currentRole == 'admin' ? 'selected' : '' ?>>
-                    ⚙️ Administrador Gerente (Acesso TOTAL, Financeiro e a todos os usuários)
-                </option>
-            </select>
-            
-            <?php if($isEdit && $user['id'] == Auth::user()['id']): ?>
-                <p class="text-xs text-orange-600 mt-2 font-medium">⚠️ Cuidado: Você está editando seu próprio nível. Remover privilégios Admin trancará o seu acesso a esta tela.</p>
-            <?php endif; ?>
-        </div>
-
-        <div class="pt-4 border-t border-gray-100 flex justify-end gap-3">
-            <a href="/admin/users" class="px-5 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium">Cancelar</a>
-            <button type="submit" class="bg-indigo-600 text-white font-bold px-6 py-2 rounded-lg hover:bg-indigo-700 shadow flex-shrink-0">
-                <?= $isEdit ? 'Salvar Configurações' : 'Cadastrar e Convidar' ?>
+        <div class="pt-6 border-t border-gray-50 flex justify-end">
+            <button type="submit" class="bg-slate-900 hover:bg-slate-800 text-white px-12 py-4 rounded-none shadow-sm text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:scale-[1.02] active:scale-[0.98]">
+                <?= isset($user) ? 'Atualizar Dados' : 'Criar Usuário' ?>
             </button>
         </div>
     </form>

@@ -1,43 +1,64 @@
-<div class="flex justify-between items-center mb-6 border-b border-gray-200 pb-4">
-    <h2 class="text-2xl font-bold text-gray-800">Serviços</h2>
-    <a href="/admin/services/create" class="bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded shadow text-sm font-medium">
-        + Novo Serviço
-    </a>
-</div>
+<div x-data="{ 
+    search: '<?= $search ?? '' ?>',
+    loading: false,
+    updateTable(page = 1) {
+        this.loading = true;
+        const params = new URLSearchParams({
+            page: page,
+            search: this.search
+        });
+        
+        const newUrl = `${window.location.pathname}?${params.toString()}`;
+        window.history.pushState({}, '', newUrl);
 
-<div class="bg-white shadow rounded-lg overflow-hidden">
-    <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-            <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descrição</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Preço (R$)</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duração (min)</th>
-                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
-            </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-            <?php foreach ($items as $item): ?>
-            <tr>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><?= htmlspecialchars($item['name']) ?></td>
-                <td class="px-6 py-4 text-sm text-gray-500"><?= htmlspecialchars($item['description']) ?></td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><?= number_format($item['price'], 2, ',', '.') ?></td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><?= $item['duration'] ?> min</td>
-                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <a href="/admin/services/edit?id=<?= $item['id'] ?>" class="text-indigo-600 hover:text-indigo-900 mr-3">Editar</a>
-                    <form action="/admin/services/delete" method="POST" class="inline-block" onsubmit="return confirm('Tem certeza?');">
-                        <input type="hidden" name="id" value="<?= $item['id'] ?>">
-                        <button type="submit" class="text-red-600 hover:text-red-900">Excluir</button>
-                    </form>
-                </td>
-            </tr>
-            <?php endforeach; ?>
-            
-            <?php if (empty($items)): ?>
-            <tr>
-                <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">Nenhum serviço cadastrado.</td>
-            </tr>
-            <?php endif; ?>
-        </tbody>
-    </table>
+        fetch(newUrl, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(res => res.text())
+        .then(html => {
+            document.getElementById('table-container').innerHTML = html;
+            this.loading = false;
+        })
+        .catch(err => {
+            console.error(err);
+            this.loading = false;
+        });
+    }
+}" x-init="$watch('search', () => { if(search.length >= 2 || search.length == 0) updateTable(1) })">
+    
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 space-y-4 md:space-y-0">
+        <div>
+            <h2 class="text-3xl font-bold text-slate-900 tracking-tighter uppercase">Serviços</h2>
+            <p class="text-xs text-gray-400 uppercase tracking-[0.3em] font-bold mt-1">Gestão de Portfólio</p>
+        </div>
+        <a href="/admin/services/create" class="bg-slate-900 hover:bg-slate-800 text-white px-8 py-3 rounded-none shadow-sm text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:scale-[1.02] active:scale-[0.98]">
+            + Novo Serviço
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white p-6 mb-6 shadow-sm border border-gray-100">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="md:col-span-2">
+                <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">Buscar pelo Nome do Serviço</label>
+                <div class="relative">
+                    <input type="text" x-model.debounce.500ms="search" placeholder="Corte, Coloração, etc..." 
+                           class="w-full bg-gray-50 border-none px-4 py-3 text-sm focus:ring-2 focus:ring-slate-900 transition-all rounded-none">
+                    <div x-show="loading" class="absolute right-3 top-3">
+                        <svg class="animate-spin h-4 w-4 text-slate-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table Container -->
+    <div id="table-container" class="bg-white shadow-sm border border-gray-100 overflow-hidden">
+        <?php require __DIR__ . '/index_table.php'; ?>
+    </div>
 </div>

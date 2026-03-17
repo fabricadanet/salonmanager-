@@ -152,6 +152,7 @@ class PublicController extends Controller {
         $this->templateView('privacy', [
             'title' => 'Política de Privacidade | ' . ($website['global']['subtitle'] ?? 'SalonManager'),
             'data' => $website,
+            'whatsapp' => $website['whatsapp']['content'] ?? '',
             'content' => $website['privacy']['content'] ?? '<p>Política de privacidade em breve.</p>'
         ]);
     }
@@ -161,6 +162,7 @@ class PublicController extends Controller {
         $this->templateView('terms', [
             'title' => 'Termos de Uso | ' . ($website['global']['subtitle'] ?? 'SalonManager'),
             'data' => $website,
+            'whatsapp' => $website['whatsapp']['content'] ?? '',
             'content' => $website['terms']['content'] ?? '<p>Termos de uso em breve.</p>'
         ]);
     }

@@ -139,6 +139,13 @@
         var calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'timeGridWeek',
             locale: 'pt-br',
+            allDayText: 'Dia Inteiro',
+            buttonText: {
+                today: 'Hoje',
+                month: 'Mês',
+                week: 'Semana',
+                day: 'Dia'
+            },
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',

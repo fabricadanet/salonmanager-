@@ -8,13 +8,26 @@ class ProfessionalController extends Controller {
     }
 
     public function index() {
-        $model = new Professional();
-        $items = $model->allWithUser();
+        $page = (int) ($_GET['page'] ?? 1);
+        $limit = 10;
+        $search = $_GET['search'] ?? null;
         
+        $filters = ['search' => $search];
+        
+        $model = new Professional();
+        $items = $model->paginateWithUser($page, $limit, $filters);
+        $total = $model->countWithFilters($filters);
+        $totalPages = ceil($total / $limit);
+        
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+            echo $this->renderPartial('admin/professionals/index_table', compact('items', 'page', 'totalPages', 'total'));
+            exit;
+        }
+
         $this->view('layouts/admin', [
             'title' => 'Profissionais | SalonManager',
             'showSidebar' => true,
-            'content' => $this->renderPartial('admin/professionals/index', compact('items'))
+            'content' => $this->renderPartial('admin/professionals/index', compact('items', 'page', 'totalPages', 'total', 'search'))
         ]);
     }
 

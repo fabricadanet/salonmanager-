@@ -57,4 +57,63 @@ class Model {
         $stmt->execute(['value' => $value]);
         return $stmt->fetchAll();
     }
+
+    public function paginate($page = 1, $limit = 10, $filters = []) {
+        $offset = ($page - 1) * $limit;
+        
+        $sql = "SELECT * FROM {$this->table}";
+        $params = [];
+        
+        if (!empty($filters)) {
+            $sql .= " WHERE ";
+            $conditions = [];
+            foreach ($filters as $field => $value) {
+                if (strpos($value, '%') !== false || strpos($value, '*') !== false) {
+                    $value = str_replace('*', '%', $value);
+                    $conditions[] = "{$field} LIKE :{$field}";
+                } else {
+                    $conditions[] = "{$field} = :{$field}";
+                }
+                $params[$field] = $value;
+            }
+            $sql .= implode(' AND ', $conditions);
+        }
+        
+        $sql .= " ORDER BY id DESC LIMIT :limit OFFSET :offset";
+        
+        $stmt = $this->db->prepare($sql);
+        foreach ($params as $key => $val) {
+            $stmt->bindValue(":{$key}", $val);
+        }
+        $stmt->bindValue(':limit', (int) $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', (int) $offset, PDO::PARAM_INT);
+        
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
+    public function count($filters = []) {
+        $sql = "SELECT COUNT(*) as total FROM {$this->table}";
+        $params = [];
+        
+        if (!empty($filters)) {
+            $sql .= " WHERE ";
+            $conditions = [];
+            foreach ($filters as $field => $value) {
+                if (strpos($value, '%') !== false || strpos($value, '*') !== false) {
+                    $value = str_replace('*', '%', $value);
+                    $conditions[] = "{$field} LIKE :{$field}";
+                } else {
+                    $conditions[] = "{$field} = :{$field}";
+                }
+                $params[$field] = $value;
+            }
+            $sql .= implode(' AND ', $conditions);
+        }
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        $result = $stmt->fetch();
+        return (int) ($result['total'] ?? 0);
+    }
 }

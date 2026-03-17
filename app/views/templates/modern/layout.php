@@ -36,24 +36,54 @@
 </head>
 <body class="bg-white text-slate-900 selection:bg-slate-900 selection:text-white">
     <?= $seoConfig['title'] ?? '' ?> <!-- google_tag -->
-    <header x-data="{ scrolled: false }" @scroll.window="scrolled = (window.pageYOffset > 50)"
+    <header x-data="{ scrolled: false, mobileMenuOpen: false }" @scroll.window="scrolled = (window.pageYOffset > 50)"
             class="fixed top-0 w-full z-50 transition-all duration-300"
-            :class="scrolled ? 'bg-white/80 backdrop-blur-md border-b py-4' : 'bg-transparent py-8'">
+            :class="scrolled || mobileMenuOpen ? 'bg-white border-b py-4' : 'bg-transparent py-8'">
         <div class="max-w-6xl mx-auto px-6 flex justify-between items-center">
             <a href="/" class="flex items-center">
                 <?php if(!empty($logo)): ?>
-                    <img src="<?= $logo ?>" alt="SalonManager" class="h-10 w-auto">
+                    <img src="<?= (string)$logo ?>" alt="SalonManager" class="h-10 w-auto">
                 <?php else: ?>
-                    <span class="text-xl font-bold tracking-tighter uppercase"><?= $global['subtitle'] ?? 'SalonManager' ?></span>
+                    <span class="text-xl font-bold tracking-tighter uppercase transition-colors" :class="scrolled || mobileMenuOpen ? 'text-slate-900' : 'text-slate-900'"><?= $global['subtitle'] ?? 'SalonManager' ?></span>
                 <?php endif; ?>
             </a>
+            
+            <!-- Desktop Nav -->
             <nav class="hidden md:flex space-x-8 text-xs font-semibold uppercase tracking-widest">
                 <a href="/" class="hover:underline">Home</a>
                 <a href="/servicos" class="hover:underline">Serviços</a>
                 <a href="/produtos" class="hover:underline">Loja</a>
                 <a href="/contato" class="hover:underline">Contato</a>
             </nav>
-            <a href="/agendar" class="bg-slate-900 text-white px-5 py-2 text-xs font-bold uppercase tracking-widest hover:bg-slate-800 transition-colors">Agendar</a>
+
+            <div class="flex items-center space-x-4">
+                <a href="/agendar" class="hidden md:block bg-slate-900 text-white px-5 py-2 text-xs font-bold uppercase tracking-widest hover:bg-slate-800 transition-colors">Agendar</a>
+                
+                <!-- Hamburger Button -->
+                <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden text-slate-900 focus:outline-none">
+                    <svg x-show="!mobileMenuOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/></svg>
+                    <svg x-show="mobileMenuOpen" x-cloak class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div x-show="mobileMenuOpen" 
+             x-cloak
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 -translate-y-4"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100 translate-y-0"
+             x-transition:leave-end="opacity-0 -translate-y-4"
+             class="md:hidden bg-white border-b absolute top-full left-0 w-full py-4 px-6 shadow-xl">
+            <nav class="flex flex-col space-y-4 text-xs font-semibold uppercase tracking-widest">
+                <a href="/" class="py-2 border-b border-slate-50">Home</a>
+                <a href="/servicos" class="py-2 border-b border-slate-50">Serviços</a>
+                <a href="/produtos" class="py-2 border-b border-slate-50">Loja</a>
+                <a href="/contato" class="py-2 border-b border-slate-50">Contato</a>
+                <a href="/agendar" class="bg-slate-900 text-white px-5 py-3 text-center font-bold uppercase tracking-widest hover:bg-slate-800 transition-colors">Agendar Horário</a>
+            </nav>
         </div>
     </header>
 

@@ -1,60 +1,61 @@
-<div class="flex justify-between items-center mb-6 border-b border-gray-200 pb-4">
-    <h2 class="text-2xl font-bold text-gray-800">Controle de Estoque</h2>
-</div>
+<div x-data="{ 
+    search: '<?= $search ?? '' ?>',
+    loading: false,
+    updateTable(page = 1) {
+        this.loading = true;
+        const params = new URLSearchParams({
+            page: page,
+            search: this.search
+        });
+        
+        const newUrl = `${window.location.pathname}?${params.toString()}`;
+        window.history.pushState({}, '', newUrl);
 
-<div class="bg-white shadow rounded-lg overflow-hidden">
-    <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-            <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produto</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Quantidade Atual</th>
-                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Mínimo Ideal</th>
-                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
-            </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-            <?php foreach ($products as $product): ?>
-            <?php 
-                $stock = (int)$product['stock_quantity'];
-                $min = (int)$product['min_stock_level'];
-                
-                $statusColor = 'bg-green-100 text-green-800';
-                $statusText = 'Adequado';
-                
-                if ($stock == 0) {
-                    $statusColor = 'bg-red-100 text-red-800';
-                    $statusText = 'Esgotado';
-                } elseif ($stock <= $min) {
-                    $statusColor = 'bg-yellow-100 text-yellow-800';
-                    $statusText = 'Estoque Baixo';
-                }
-            ?>
-            <tr>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><?= htmlspecialchars($product['name']) ?></td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <?= $statusColor ?>">
-                        <?= $statusText ?>
-                    </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-bold <?= $stock <= $min ? 'text-red-600' : 'text-gray-900' ?>">
-                    <?= $stock ?>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
-                    <?= $min ?>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <a href="/admin/stock/movement?product_id=<?= $product['id'] ?>" class="text-indigo-600 hover:text-indigo-900 mr-3">Movimentar</a>
-                    <a href="/admin/stock/history?product_id=<?= $product['id'] ?>" class="text-gray-600 hover:text-gray-900">Histórico</a>
-                </td>
-            </tr>
-            <?php endforeach; ?>
-            
-            <?php if (empty($products)): ?>
-            <tr>
-                <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">Nenhum produto cadastrado. Adicione produtos na aba "Produtos".</td>
-            </tr>
-            <?php endif; ?>
-        </tbody>
-    </table>
+        fetch(newUrl, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(res => res.text())
+        .then(html => {
+            document.getElementById('table-container').innerHTML = html;
+            this.loading = false;
+        })
+        .catch(err => {
+            console.error(err);
+            this.loading = false;
+        });
+    }
+}" x-init="$watch('search', () => { if(search.length >= 2 || search.length == 0) updateTable(1) })">
+    
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 space-y-4 md:space-y-0">
+        <div>
+            <h2 class="text-3xl font-bold text-slate-900 tracking-tighter uppercase">Estoque</h2>
+            <p class="text-xs text-gray-400 uppercase tracking-[0.3em] font-bold mt-1">Visão Geral de Materiais</p>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white p-6 mb-6 shadow-sm border border-gray-100">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="md:col-span-2">
+                <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">Filtrar por Produto</label>
+                <div class="relative">
+                    <input type="text" x-model.debounce.500ms="search" placeholder="Qual produto você procura?" 
+                           class="w-full bg-gray-50 border-none px-4 py-3 text-sm focus:ring-2 focus:ring-slate-900 transition-all rounded-none">
+                    <div x-show="loading" class="absolute right-3 top-3">
+                        <svg class="animate-spin h-4 w-4 text-slate-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table Container -->
+    <div id="table-container" class="bg-white shadow-sm border border-gray-100 overflow-hidden">
+        <?php require __DIR__ . '/index_table.php'; ?>
+    </div>
 </div>

@@ -19,9 +19,29 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
 </head>
     <!-- Alpine wrapper around the whole UI -->
-    <div x-data="{ sidebarOpen: localStorage.getItem('sidebarOpen') !== 'false' }" 
+    <div x-data="{ 
+            sidebarOpen: localStorage.getItem('sidebarOpen') !== 'false',
+            isLoading: false 
+         }" 
          x-init="$watch('sidebarOpen', val => localStorage.setItem('sidebarOpen', val))"
+         @loading.window="isLoading = $event.detail"
          class="flex h-full w-full">
+         
+         <!-- Global Loading Spinner -->
+         <div x-show="isLoading" 
+              x-transition:enter="transition ease-out duration-300"
+              x-transition:enter-start="opacity-0"
+              x-transition:enter-end="opacity-100"
+              x-transition:leave="transition ease-in duration-200"
+              x-transition:leave-start="opacity-100"
+              x-transition:leave-end="opacity-0"
+              class="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm"
+              x-cloak>
+            <div class="bg-white p-8 rounded-3xl shadow-2xl flex flex-col items-center gap-4">
+                <div class="w-12 h-12 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
+                <span class="text-sm font-black uppercase tracking-widest text-gray-800">Processando...</span>
+            </div>
+         </div>
          
     <!-- Sidebar for Admin Panel -->
     <?php if (isset($showSidebar) && $showSidebar): ?>
@@ -41,6 +61,12 @@
             </div>
             
             <nav class="flex-1 px-3 py-6 space-y-1 overflow-y-auto" :class="sidebarOpen ? 'px-3' : 'px-2 items-center'">
+                <!-- View Public Site Link -->
+                <a href="/" target="_blank" class="flex items-center px-3 py-2.5 mb-6 rounded-lg text-sm font-bold text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300 transition-colors border border-emerald-500/20 bg-emerald-500/5 group" :title="!sidebarOpen ? 'Ver Site Público' : ''">
+                    <svg class="h-5 w-5 flex-shrink-0 text-emerald-500 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                    <span x-show="sidebarOpen" class="ml-3 whitespace-nowrap">Ver Site Público</span>
+                </a>
+
                 <a href="/admin" class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium <?= $_SERVER['REQUEST_URI'] === '/admin' ? 'bg-gray-800 text-white pointer-events-none' : 'text-gray-300 hover:bg-gray-800 hover:text-white' ?> transition-colors" :title="!sidebarOpen ? 'Painel Geral' : ''">
                     <svg class="h-5 w-5 flex-shrink-0 <?= $_SERVER['REQUEST_URI'] === '/admin' ? 'text-white' : 'text-gray-400' ?>" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
                     <span x-show="sidebarOpen" class="ml-3 whitespace-nowrap">Painel Geral</span>
@@ -146,5 +172,22 @@
     
     <!-- Close alpine x-data wrapper -->
     </div>
+
+    <script>
+        // Auto-show spinner on form submissions
+        document.addEventListener('submit', (e) => {
+            // Give a tiny delay so validation can happen
+            setTimeout(() => {
+                if (!e.defaultPrevented) {
+                    window.dispatchEvent(new CustomEvent('loading', { detail: true }));
+                }
+            }, 10);
+        });
+
+        // Hide spinner on page hide (useful for browser back)
+        window.addEventListener('pageshow', () => {
+            window.dispatchEvent(new CustomEvent('loading', { detail: false }));
+        });
+    </script>
 </body>
 </html>

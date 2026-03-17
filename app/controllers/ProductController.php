@@ -8,13 +8,29 @@ class ProductController extends Controller {
     }
 
     public function index() {
-        $model = new Product();
-        $items = $model->all();
+        $page = (int) ($_GET['page'] ?? 1);
+        $limit = 10;
+        $search = $_GET['search'] ?? null;
         
+        $filters = [];
+        if ($search) {
+            $filters['name'] = "%{$search}%";
+        }
+        
+        $model = new Product();
+        $items = $model->paginate($page, $limit, $filters);
+        $total = $model->count($filters);
+        $totalPages = ceil($total / $limit);
+        
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+            echo $this->renderPartial('admin/products/index_table', compact('items', 'page', 'totalPages', 'total'));
+            exit;
+        }
+
         $this->view('layouts/admin', [
             'title' => 'Produtos | SalonManager',
             'showSidebar' => true,
-            'content' => $this->renderPartial('admin/products/index', compact('items'))
+            'content' => $this->renderPartial('admin/products/index', compact('items', 'page', 'totalPages', 'total', 'search'))
         ]);
     }
 
