@@ -1,4 +1,0 @@
-[2026-03-17 14:45:03] store() called. Payload: {"customer_id":"","payment_method":"dinheiro","items":[{"type":"product","item_id":"1","quantity":1,"professional_id":""}]}
-[2026-03-17 14:45:04] store() called. Payload: {"customer_id":"","payment_method":"dinheiro","items":[{"type":"product","item_id":"1","quantity":1,"professional_id":""}]}
-[2026-03-17 14:46:53] store() called. Payload: {"customer_id":"","payment_method":"dinheiro","items":[{"type":"service","item_id":"1","quantity":1,"professional_id":"2"}]}
-[2026-03-17 14:46:55] store() called. Payload: {"customer_id":"","payment_method":"dinheiro","items":[{"type":"service","item_id":"1","quantity":1,"professional_id":"2"}]}
