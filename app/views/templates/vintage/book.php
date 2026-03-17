@@ -12,6 +12,12 @@
             </div>
         <?php endif; ?>
 
+        <?php if (isset($_GET['error'])): ?>
+            <div class="vintage-border p-8 mb-16 bg-red-50 text-center reveal">
+                <p class="text-xs font-serif italic text-red-800 uppercase tracking-widest">Sentimos muito, algo não saiu como esperado. Tente novamente.</p>
+            </div>
+        <?php endif; ?>
+
         <form action="/agendar" method="POST" class="vintage-border p-10 md:p-20 bg-white shadow-2xl space-y-16 reveal relative">
             <div class="absolute inset-4 border border-amber-900/5 pointer-events-none"></div>
             

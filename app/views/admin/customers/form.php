@@ -49,3 +49,99 @@
         </div>
     </form>
 </div>
+
+<?php if ($customer): ?>
+<div class="mt-12 space-y-16">
+    <!-- Appointments History -->
+    <div x-data="{ 
+        search: '', from: '', to: '', loading: false,
+        update() {
+            this.loading = true;
+            const params = new URLSearchParams({
+                id: '<?= $customer['id'] ?>',
+                history_type: 'appointments',
+                history_search: this.search,
+                history_from: this.from,
+                history_to: this.to
+            });
+            fetch('/admin/customers/edit?' + params.toString(), {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(res => res.text())
+            .then(html => {
+                document.getElementById('history-appointments-container').innerHTML = html;
+                this.loading = false;
+            });
+        }
+    }">
+        <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-end border-b border-gray-100 pb-4 gap-4">
+            <div>
+                <h3 class="text-xl font-bold text-slate-900 tracking-tighter uppercase">Histórico de Agendamentos</h3>
+                <p class="text-[9px] text-gray-400 uppercase tracking-[0.3em] font-black mt-1">Todos os serviços agendados</p>
+            </div>
+            
+            <div class="flex flex-wrap gap-2 items-center">
+                <input type="text" x-model="search" @input.debounce.500ms="update()" placeholder="Buscar serviço..." class="text-[10px] uppercase font-bold tracking-widest bg-gray-50 border-none px-3 py-2 focus:ring-1 focus:ring-slate-900 w-40">
+                <div class="flex items-center bg-gray-50 px-2">
+                    <input type="date" x-model="from" @change="update()" class="text-[10px] bg-transparent border-none p-2 focus:ring-0">
+                    <span class="text-[10px] text-gray-300 mx-1">até</span>
+                    <input type="date" x-model="to" @change="update()" class="text-[10px] bg-transparent border-none p-2 focus:ring-0">
+                </div>
+                <div x-show="loading" class="ml-2">
+                    <svg class="animate-spin h-4 w-4 text-slate-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                </div>
+            </div>
+        </div>
+        
+        <div id="history-appointments-container" class="bg-white border border-gray-100 overflow-hidden shadow-sm">
+            <?php require __DIR__ . '/history_appointments.php'; ?>
+        </div>
+    </div>
+
+    <!-- Consumption History -->
+    <div x-data="{ 
+        search: '', from: '', to: '', loading: false,
+        update() {
+            this.loading = true;
+            const params = new URLSearchParams({
+                id: '<?= $customer['id'] ?>',
+                history_type: 'consumption',
+                history_search: this.search,
+                history_from: this.from,
+                history_to: this.to
+            });
+            fetch('/admin/customers/edit?' + params.toString(), {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(res => res.text())
+            .then(html => {
+                document.getElementById('history-consumption-container').innerHTML = html;
+                this.loading = false;
+            });
+        }
+    }">
+        <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-end border-b border-gray-100 pb-4 gap-4">
+            <div>
+                <h3 class="text-xl font-bold text-slate-900 tracking-tighter uppercase">Consumo (Produtos e Serviços)</h3>
+                <p class="text-[9px] text-gray-400 uppercase tracking-[0.3em] font-black mt-1">Histórico de vendas vinculadas</p>
+            </div>
+
+            <div class="flex flex-wrap gap-2 items-center">
+                <input type="text" x-model="search" @input.debounce.500ms="update()" placeholder="Buscar item..." class="text-[10px] uppercase font-bold tracking-widest bg-gray-50 border-none px-3 py-2 focus:ring-1 focus:ring-slate-900 w-40">
+                <div class="flex items-center bg-gray-50 px-2">
+                    <input type="date" x-model="from" @change="update()" class="text-[10px] bg-transparent border-none p-2 focus:ring-0">
+                    <span class="text-[10px] text-gray-300 mx-1">até</span>
+                    <input type="date" x-model="to" @change="update()" class="text-[10px] bg-transparent border-none p-2 focus:ring-0">
+                </div>
+                <div x-show="loading" class="ml-2">
+                    <svg class="animate-spin h-4 w-4 text-slate-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                </div>
+            </div>
+        </div>
+        
+        <div id="history-consumption-container" class="bg-white border border-gray-100 overflow-hidden shadow-sm">
+            <?php require __DIR__ . '/history_consumption.php'; ?>
+        </div>
+    </div>
+</div>
+<?php endif; ?>

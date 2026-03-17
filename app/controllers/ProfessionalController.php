@@ -59,10 +59,44 @@ class ProfessionalController extends Controller {
         $model = new Professional();
         $item = $model->find($id);
 
+        require_once __DIR__ . '/../models/Appointment.php';
+        require_once __DIR__ . '/../models/SaleItem.php';
+        require_once __DIR__ . '/../models/Commission.php';
+
+        $appointmentModel = new Appointment();
+        $saleItemModel = new SaleItem();
+        $commissionModel = new Commission();
+
+        $filters = [
+            'search' => $_GET['history_search'] ?? '',
+            'date_from' => $_GET['history_from'] ?? '',
+            'date_to' => $_GET['history_to'] ?? ''
+        ];
+
+        // If AJAX request for specific history section
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+            $historyType = $_GET['history_type'] ?? '';
+            if ($historyType === 'appointments') {
+                $appointments = $appointmentModel->getByProfessionalId($id, $filters);
+                echo $this->renderPartial('admin/professionals/history_appointments', compact('appointments'));
+            } elseif ($historyType === 'products') {
+                $products = $saleItemModel->getProductsByProfessionalId($id, $filters);
+                echo $this->renderPartial('admin/professionals/history_products', compact('products'));
+            } elseif ($historyType === 'commissions') {
+                $commissions = $commissionModel->getDailyCommissionsByProfessionalId($id, $filters);
+                echo $this->renderPartial('admin/professionals/history_commissions', compact('commissions'));
+            }
+            exit;
+        }
+
+        $appointments = $appointmentModel->getByProfessionalId($id);
+        $products = $saleItemModel->getProductsByProfessionalId($id);
+        $commissions = $commissionModel->getDailyCommissionsByProfessionalId($id);
+
         $this->view('layouts/admin', [
             'title' => 'Editar Profissional | SalonManager',
             'showSidebar' => true,
-            'content' => $this->renderPartial('admin/professionals/form', compact('item'))
+            'content' => $this->renderPartial('admin/professionals/form', compact('item', 'appointments', 'products', 'commissions'))
         ]);
     }
 

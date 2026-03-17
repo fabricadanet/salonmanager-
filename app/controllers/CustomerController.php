@@ -65,10 +65,39 @@ class CustomerController extends Controller {
         $customerModel = new Customer();
         $customer = $customerModel->find($id);
 
+        // Fetch history
+        require_once __DIR__ . '/../models/Appointment.php';
+        require_once __DIR__ . '/../models/SaleItem.php';
+        
+        $filters = [
+            'search' => $_GET['history_search'] ?? '',
+            'date_from' => $_GET['history_from'] ?? '',
+            'date_to' => $_GET['history_to'] ?? ''
+        ];
+
+        $appointmentModel = new Appointment();
+        $saleItemModel = new SaleItem();
+
+        // If AJAX request for specific history section
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+            $historyType = $_GET['history_type'] ?? '';
+            if ($historyType === 'appointments') {
+                $appointments = $appointmentModel->getByCustomerId($id, $filters);
+                echo $this->renderPartial('admin/customers/history_appointments', compact('appointments'));
+            } elseif ($historyType === 'consumption') {
+                $consumption = $saleItemModel->getByCustomerId($id, $filters);
+                echo $this->renderPartial('admin/customers/history_consumption', compact('consumption'));
+            }
+            exit;
+        }
+
+        $appointments = $appointmentModel->getByCustomerId($id);
+        $consumption = $saleItemModel->getByCustomerId($id);
+
         $this->view('layouts/admin', [
             'title' => 'Editar Cliente | SalonManager',
             'showSidebar' => true,
-            'content' => $this->renderPartial('admin/customers/form', compact('customer'))
+            'content' => $this->renderPartial('admin/customers/form', compact('customer', 'appointments', 'consumption'))
         ]);
     }
 

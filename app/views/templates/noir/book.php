@@ -9,6 +9,12 @@
             </div>
         <?php endif; ?>
 
+        <?php if(isset($_GET['error'])): ?>
+            <div class="mb-12 p-6 bg-red-900/20 border border-red-900/40 text-red-500 text-center uppercase tracking-widest text-xs font-bold">
+                Houve um problema com seu pedido. Por favor, revise os dados.
+            </div>
+        <?php endif; ?>
+
         <div class="mb-16 space-y-4 reveal">
             <span class="text-[10px] uppercase tracking-[0.5em] text-gold font-bold">Appointment</span>
             <h1 class="text-6xl md:text-7xl font-serif italic text-white leading-tight">Agende seu momento.</h1>

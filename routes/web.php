@@ -9,6 +9,7 @@ $router->get('/servicos', 'PublicController@services');
 $router->get('/produtos', 'PublicController@products');
 $router->get('/agendar', 'PublicController@book');
 $router->post('/agendar', 'PublicController@processBooking');
+$router->post('/process-booking', 'PublicController@processBooking'); // Fallback
 $router->get('/contato', 'PublicController@contact');
 $router->get('/privacidade', 'PublicController@privacy');
 $router->get('/termos', 'PublicController@terms');

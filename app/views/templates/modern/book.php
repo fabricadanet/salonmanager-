@@ -11,6 +11,12 @@
         </div>
     <?php endif; ?>
 
+    <?php if (isset($_GET['error'])): ?>
+        <div class="bg-red-500 text-white p-8 mb-16 reveal">
+            <p class="text-sm font-bold uppercase tracking-widest text-center">Erro ao processar reserva. Tente novamente.</p>
+        </div>
+    <?php endif; ?>
+
     <form action="/agendar" method="POST" class="space-y-12 reveal">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
             <div class="space-y-4">

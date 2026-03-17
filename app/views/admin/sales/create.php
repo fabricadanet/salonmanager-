@@ -1,5 +1,4 @@
 <!-- PDV / Frente de Caixa View using AlpineJS -->
-<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
 
 <div class="mb-8 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
     <div>

@@ -9,12 +9,14 @@ class Model {
     }
 
     public function all() {
-        $stmt = $this->db->query("SELECT * FROM {$this->table}");
+        $where = $this->hasDeletedAt() ? " WHERE deleted_at IS NULL" : "";
+        $stmt = $this->db->query("SELECT * FROM {$this->table}{$where}");
         return $stmt->fetchAll();
     }
 
     public function find($id) {
-        $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE id = :id LIMIT 1");
+        $where = $this->hasDeletedAt() ? " AND deleted_at IS NULL" : "";
+        $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE id = :id{$where} LIMIT 1");
         $stmt->execute(['id' => $id]);
         return $stmt->fetch();
     }
@@ -48,12 +50,16 @@ class Model {
     }
 
     public function delete($id) {
+        if ($this->hasDeletedAt()) {
+            return $this->update($id, ['deleted_at' => date('Y-m-d H:i:s')]);
+        }
         $stmt = $this->db->prepare("DELETE FROM {$this->table} WHERE id = :id");
         return $stmt->execute(['id' => $id]);
     }
     
     public function where($field, $value) {
-        $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE {$field} = :value");
+        $where = $this->hasDeletedAt() ? " AND deleted_at IS NULL" : "";
+        $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE {$field} = :value{$where}");
         $stmt->execute(['value' => $value]);
         return $stmt->fetchAll();
     }
@@ -64,17 +70,24 @@ class Model {
         $sql = "SELECT * FROM {$this->table}";
         $params = [];
         
+        if ($this->hasDeletedAt()) {
+            $filters['deleted_at'] = 'NULL';
+        }
+
         if (!empty($filters)) {
             $sql .= " WHERE ";
             $conditions = [];
             foreach ($filters as $field => $value) {
-                if (strpos($value, '%') !== false || strpos($value, '*') !== false) {
+                if ($value === 'NULL') {
+                    $conditions[] = "{$field} IS NULL";
+                } elseif (strpos($value, '%') !== false || strpos($value, '*') !== false) {
                     $value = str_replace('*', '%', $value);
                     $conditions[] = "{$field} LIKE :{$field}";
+                    $params[$field] = $value;
                 } else {
                     $conditions[] = "{$field} = :{$field}";
+                    $params[$field] = $value;
                 }
-                $params[$field] = $value;
             }
             $sql .= implode(' AND ', $conditions);
         }
@@ -96,17 +109,24 @@ class Model {
         $sql = "SELECT COUNT(*) as total FROM {$this->table}";
         $params = [];
         
+        if ($this->hasDeletedAt()) {
+            $filters['deleted_at'] = 'NULL';
+        }
+
         if (!empty($filters)) {
             $sql .= " WHERE ";
             $conditions = [];
             foreach ($filters as $field => $value) {
-                if (strpos($value, '%') !== false || strpos($value, '*') !== false) {
+                if ($value === 'NULL') {
+                    $conditions[] = "{$field} IS NULL";
+                } elseif (strpos($value, '%') !== false || strpos($value, '*') !== false) {
                     $value = str_replace('*', '%', $value);
                     $conditions[] = "{$field} LIKE :{$field}";
+                    $params[$field] = $value;
                 } else {
                     $conditions[] = "{$field} = :{$field}";
+                    $params[$field] = $value;
                 }
-                $params[$field] = $value;
             }
             $sql .= implode(' AND ', $conditions);
         }
@@ -115,5 +135,15 @@ class Model {
         $stmt->execute($params);
         $result = $stmt->fetch();
         return (int) ($result['total'] ?? 0);
+    }
+
+    protected function hasDeletedAt() {
+        $stmt = $this->db->query("PRAGMA table_info({$this->table})");
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            if ($row['name'] === 'deleted_at') {
+                return true;
+            }
+        }
+        return false;
     }
 }

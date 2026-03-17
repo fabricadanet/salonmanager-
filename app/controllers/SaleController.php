@@ -63,7 +63,6 @@ class SaleController extends Controller {
 
     public function store() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Read JSON payload from AlpineJS
             $json = file_get_contents('php://input');
             $data = json_decode($json, true);
 
@@ -145,8 +144,9 @@ class SaleController extends Controller {
                     $subtotal = $unitPrice * $quantity;
                     $totalAmount += $subtotal;
 
+
                     // Save SaleItem
-                    $saleItemModel->create([
+                    $saleItemId = $saleItemModel->create([
                         'sale_id' => $saleId,
                         'type' => $type,
                         'item_id' => $itemId,
@@ -159,33 +159,21 @@ class SaleController extends Controller {
                     // Generate Commission
                     if ($professionalId && $itemCommissionPercent > 0) {
                         $commissionAmount = $subtotal * ($itemCommissionPercent / 100);
-                        // Using 'appointment_id' as NULL for POS sales in commissions table is fine because the schema allows it technically? 
-                        // Wait, looking at schema: appointment_id is NOT NULL in commissions. We need to alter it or use a trick.
-                        // Let's create a dummy appointment or adjust schema. 
-                        // Actually, I should alter table to allow NULL appointment_id for product commissions.
-                        $db->exec("ALTER TABLE commissions RENAME TO commissions_old");
-                        $db->exec("
-                            CREATE TABLE commissions (
-                                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                appointment_id INTEGER NULL,
-                                professional_id INTEGER NOT NULL,
-                                amount REAL NOT NULL,
-                                sale_item_id INTEGER NULL,
-                                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                                FOREIGN KEY(appointment_id) REFERENCES appointments(id),
-                                FOREIGN KEY(professional_id) REFERENCES professionals(id),
-                                FOREIGN KEY(sale_item_id) REFERENCES sale_items(id)
-                            )
-                        ");
-                        $db->exec("INSERT INTO commissions (id, appointment_id, professional_id, amount, created_at) SELECT id, appointment_id, professional_id, amount, created_at FROM commissions_old");
-                        $db->exec("DROP TABLE commissions_old");
                         
+                        // Insert Commission specifically linked to this sale_item_id
                         $stmt = $db->prepare("INSERT INTO commissions (appointment_id, professional_id, amount, sale_item_id) VALUES (NULL, ?, ?, ?)");
-                        $stmt->execute([$professionalId, $commissionAmount, $db->lastInsertId()]);
+                        $stmt->execute([$professionalId, $commissionAmount, $saleItemId]);
                         $commissionId = $db->lastInsertId();
 
                         // FINANCEIRO: Lançar Conta a Pagar (Pendente) para a comissão
-                        $profName = $profs[array_search($professionalId, array_column($profs, 'id'))]['name'] ?? 'Profissional';
+                        $profName = '';
+                        foreach($profs as $p) {
+                            if($p['id'] == $professionalId) {
+                                $profName = $p['name'];
+                                break;
+                            }
+                        }
+                        
                         $catStmt = $db->query("SELECT id FROM financial_categories WHERE name = 'Comissão Profissional'");
                         $catId = $catStmt->fetchColumn() ?: 4; // Fallback
 

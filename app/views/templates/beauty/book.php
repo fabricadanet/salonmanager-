@@ -7,6 +7,19 @@
         </div>
 
         <div class="bg-white rounded-[3rem] shadow-2xl overflow-hidden border border-white">
+            <?php if (isset($_GET['success'])): ?>
+                <div class="bg-gold/10 border-b border-gold/20 p-8 text-center">
+                    <h3 class="text-2xl font-serif italic text-primary">Agendamento Realizado!</h3>
+                    <p class="text-xs uppercase tracking-widest text-slate-500 mt-2">Recebemos sua solicitação e entraremos em contato em breve.</p>
+                </div>
+            <?php endif; ?>
+
+            <?php if (isset($_GET['error'])): ?>
+                <div class="bg-red-50 border-b border-red-100 p-6 text-center">
+                    <p class="text-xs uppercase tracking-widest text-red-500 font-bold">Ocorreu um erro ao processar seu agendamento. Por favor, tente novamente.</p>
+                </div>
+            <?php endif; ?>
+
             <div class="grid md:grid-cols-5 h-full">
                 <div class="md:col-span-2 bg-primary p-12 text-white flex flex-col justify-between relative overflow-hidden">
                     <div class="absolute -top-20 -left-20 w-64 h-64 bg-gold/20 rounded-full blur-3xl"></div>
@@ -41,7 +54,7 @@
                 </div>
 
                 <div class="md:col-span-3 p-12 md:p-16">
-                    <form action="/process-booking" method="POST" class="space-y-8">
+                    <form action="/agendar" method="POST" class="space-y-8">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="space-y-2">
                                 <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Nome Completo</label>
@@ -78,8 +91,8 @@
 
                         <div class="space-y-2">
                             <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Profissional de Preferência</label>
-                            <select name="professional_id" class="w-full bg-soft border-none rounded-2xl p-4 text-sm focus:ring-2 focus:ring-gold outline-none transition-all appearance-none">
-                                <option value="">Sem preferência (Qualquer profissional)</option>
+                            <select name="professional_id" required class="w-full bg-soft border-none rounded-2xl p-4 text-sm focus:ring-2 focus:ring-gold outline-none transition-all appearance-none">
+                                <option value="">Escolha o profissional...</option>
                                 <?php foreach ($professionals as $p): ?>
                                     <option value="<?= $p['id'] ?>"><?= htmlspecialchars($p['name']) ?></option>
                                 <?php endforeach; ?>

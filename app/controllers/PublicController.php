@@ -94,6 +94,11 @@ class PublicController extends Controller {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $data = Validator::sanitize($_POST);
             
+            if (empty($data['service_id']) || empty($data['professional_id'])) {
+                $this->redirect('/agendar?error=missing_data');
+                return;
+            }
+            
             // For public booking, we just create a rudimentary Customer record or map to existing by phone
             $db = Database::getConnection();
             $stmt = $db->prepare("SELECT id FROM customers WHERE phone = ? LIMIT 1");

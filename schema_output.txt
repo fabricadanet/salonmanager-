@@ -1,0 +1,38 @@
+--- SCHEMA: services ---
+id              | INTEGER    | NULL 
+name            | TEXT       | NOT NULL
+description     | TEXT       | NULL 
+price           | REAL       | NOT NULL
+duration        | INTEGER    | NOT NULL
+is_active       | INTEGER    | NULL 
+created_at      | DATETIME   | NULL 
+image           | TEXT       | NULL 
+
+--- SCHEMA: products ---
+id              | INTEGER    | NULL 
+name            | TEXT       | NOT NULL
+description     | TEXT       | NULL 
+price           | REAL       | NOT NULL
+image           | TEXT       | NULL 
+is_active       | INTEGER    | NULL 
+created_at      | DATETIME   | NULL 
+stock_quantity  | INTEGER    | NULL 
+min_stock_level | INTEGER    | NULL 
+commission_percentage | REAL       | NULL 
+
+--- SCHEMA: customers ---
+id              | INTEGER    | NULL 
+name            | TEXT       | NOT NULL
+phone           | TEXT       | NULL 
+email           | TEXT       | NULL 
+notes           | TEXT       | NULL 
+created_at      | DATETIME   | NULL 
+
+--- SCHEMA: professionals ---
+id              | INTEGER    | NULL 
+user_id         | INTEGER    | NULL 
+name            | TEXT       | NOT NULL
+specialty       | TEXT       | NULL 
+commission_percentage | REAL       | NULL 
+created_at      | DATETIME   | NULL 
+
